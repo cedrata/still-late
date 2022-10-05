@@ -1,6 +1,11 @@
 ![PAMPLEJUCE](pamplejuce.png)
 [![](https://github.com/sudara/pamplejuce/workflows/Pamplejuce/badge.svg)](https://github.com/sudara/pamplejuce/actions)
 
+**Important Note!**
+This is a fork of the sudara/pamplejuce repository. In my opinion few things were missing to make me confortable in using this repository.
+The following feature were added:
+* A python script that generates the CMake file without manually having to list all the files by manually writing them. Path to script ```Scripts/cmake_lists_init.py```, utilization instructions inside the script.
+
 Pamplejuce is a ~~template~~ lifestyle for creating and building JUCE plugins in 2022.
 
 Out of the box, it supports:
