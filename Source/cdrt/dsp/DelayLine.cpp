@@ -1,10 +1,8 @@
 //
-//  DelayLine.hpp
+//  DelayLine.cpp
 //  StillLate
 //
 //  Created by Cedrata on 05/10/22.
 //
 
-#pragma once
-
-#include <stdio.h>
+#include "DelayLine.h"
