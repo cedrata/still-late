@@ -67,8 +67,9 @@ set(SourceFiles
 	Source/PluginEditor.h
 	Source/PluginProcessor.cpp
 	Source/PluginProcessor.h
-	Source/cdrt/DelayLine.cpp
-	Source/cdrt/DelayLine.hpp)
+	Source/cdrt/dsp/DelayLine.cpp
+	Source/cdrt/dsp/DelayLine.h
+	Source/cdrt/utility/Interpolation.h)
 target_sources("${PROJECT_NAME}" PRIVATE ${SourceFiles})
 
 # No, we don't want our source buried in extra nested folders
