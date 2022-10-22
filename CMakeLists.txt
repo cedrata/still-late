@@ -69,6 +69,7 @@ set(SourceFiles
 	Source/PluginProcessor.h
 	Source/cdrt/dsp/DelayLine.cpp
 	Source/cdrt/dsp/DelayLine.h
+	Source/cdrt/utility/Conversion.h
 	Source/cdrt/utility/Interpolation.h)
 target_sources("${PROJECT_NAME}" PRIVATE ${SourceFiles})
 
@@ -109,7 +110,8 @@ set_target_properties(Assets PROPERTIES FOLDER "Targets")
 
 # We'll need to link to these from our plugin as well as our tests
 set(JUCE_DEPENDENCIES
-    juce::juce_audio_utils)
+    juce::juce_audio_utils
+	juce::juce_dsp)
 
 target_compile_definitions("${PROJECT_NAME}"
     PUBLIC
