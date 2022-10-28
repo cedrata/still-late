@@ -1,10 +1,3 @@
-//
-//  Interpolation.hpp
-//  Assets
-//
-//  Created by Luca Greggio on 09/10/22.
-//
-
 #pragma once
 
 #include <type_traits>
