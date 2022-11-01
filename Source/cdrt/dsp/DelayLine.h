@@ -14,25 +14,28 @@ class DelayLine
 public:
     //==========================================================================
     // Default constructor.
-    DelayLine(const int maxBufferSize);
+    DelayLine (const int maxBufferSize);
     
     //==========================================================================
-    void prepare(const juce::dsp::ProcessSpec& spec, bool singleChannel);
+    // Allocation/Deallocation.
+    void prepare (const juce::dsp::ProcessSpec& spec, bool singleChannel);
     void reset();
     
     //==========================================================================
-    void setDelay(const float &delaySamples);
-    void setDelay(const double &delayTime);
-    void setFeedback(const float &feedback);
+    // Setters.
+    void setDelaySamples (const SampleType &delaySamples);
+    void setDelayTime (const SampleType &delayTime);
+    void setFeedback (const float &feedback);
     
     //==========================================================================
-    void putSample(const SampleType sample);
+    // Processing.
+    void putSample (const SampleType sample);
     SampleType popSample();
-    
-    
-    SampleType processSample(int channel, float inputSample);
+    SampleType processSample (int channel, float inputSample);
+
 private:
     //==========================================================================
+    // Processing
     /**
      * @brief This function is enabled only when the InterpolationType is Lagrange3rd and applies lagrange interpolation to the samples.
      * 
@@ -44,7 +47,7 @@ private:
      */
     template <typename T = InterpolationType>
     typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::None>::value, SampleType>::type
-    interpolateSample(int channel, size_t readSample)
+    interpolateSample (int channel, size_t readSample)
     {
         return buffer.getSample(channel, static_cast<int>(readSample));
     }
@@ -60,7 +63,7 @@ private:
      */
     template <typename T = InterpolationType>
     typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::Linear>::value, SampleType>::type
-    interpolateSample(int channel, size_t readSample)
+    interpolateSample (int channel, size_t readSample)
     {
         // Retriving index to read from.
         auto index1 = static_cast<int>(readSample);
@@ -83,7 +86,7 @@ private:
      */
     template <typename T = InterpolationType>
     typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::Lagrange3rd>::value, SampleType>::type
-    interpolateSample(int channel, size_t readSample)
+    interpolateSample (int channel, size_t readSample)
     {
         // Retriving index to read from.
         auto index1 = static_cast<int>(readSample);
@@ -111,7 +114,7 @@ private:
      */
     template <typename T = InterpolationType>
     typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::Thiran>::value, SampleType>::type
-    interpolateSample(int channel, size_t readSample)
+    interpolateSample (int channel, size_t readSample)
     {
         // Retriving index to read from.
         auto index1 = static_cast<int>(readSample);
@@ -189,6 +192,7 @@ private:
 
         this->alpha = (1 - this->delayFrac) / (1 + this->delayFrac);
     }
+
     //==========================================================================
     // Buffer.
     juce::AudioBuffer <SampleType> buffer;
@@ -200,8 +204,8 @@ private:
     juce::uint32 maxBlocks;
     
     // Delay.
-    float delaySamples = 0.f;
-    float delayFrac = 0.f; // Depends on delay samples.
+    SampleType delaySamples = 0.f;
+    SampleType delayFrac = 0.f; // Depends on delay samples.
     int delayInt = 0; // Depends on delay samples.
     std::vector <size_t> writePointer;
     
