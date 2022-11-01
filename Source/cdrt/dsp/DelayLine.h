@@ -8,8 +8,6 @@ namespace cdrt
 {
 namespace dsp
 {
-
-// TODO: test interpolation function first.
 template <typename SampleType, typename InterpolationType>
 class DelayLine
 {
