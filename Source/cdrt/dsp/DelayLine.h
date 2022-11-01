@@ -14,28 +14,33 @@ class DelayLine
 public:
     //==========================================================================
     // Default constructor.
+
     DelayLine (const int maxBufferSize);
     
     //==========================================================================
     // Allocation/Deallocation.
+
     void prepare (const juce::dsp::ProcessSpec& spec, bool singleChannel);
     void reset();
     
     //==========================================================================
     // Setters.
+
     void setDelaySamples (const SampleType &delaySamples);
     void setDelayTime (const SampleType &delayTime);
     void setFeedback (const float &feedback);
     
     //==========================================================================
     // Processing.
-    void putSample (const SampleType sample);
+
+    void putSample (const SampleType& sample);
     SampleType popSample();
-    SampleType processSample (int channel, float inputSample);
+    SampleType processSample (const int& channel, const float& inputSample);
 
 private:
     //==========================================================================
     // Processing
+
     /**
      * @brief This function is enabled only when the InterpolationType is Lagrange3rd and applies lagrange interpolation to the samples.
      * 
