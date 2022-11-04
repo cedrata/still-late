@@ -3,8 +3,11 @@
 // Module to test.
 #include <cdrt/utility/Conversion.h>
 
-// Test 
+// msToSamples w/ dougble sampletype.
 TEST_CASE("Convert 100ms to samples at 44100Hz: expected result -> 4410.0")
 {
-    REQUIRE(cdrt::utility::conversion::msToSamples(100.0, 44100) == 4410.0);
+    REQUIRE(cdrt::utility::conversion::msToSamples<double>(100.0f, 44100.0f) == 4410.0f);
 }
+
+// msToSamples w/ float sampletype.
+// At the moment not implemented, double is good enough as test.

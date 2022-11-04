@@ -69,7 +69,6 @@ set(SourceFiles
 	Source/PluginProcessor.h
 	Source/cdrt/dsp/DelayLine.cpp
 	Source/cdrt/dsp/DelayLine.h
-	Source/cdrt/utility/Conversion.cpp
 	Source/cdrt/utility/Conversion.h
 	Source/cdrt/utility/Interpolation.h)
 target_sources("${PROJECT_NAME}" PRIVATE ${SourceFiles})
