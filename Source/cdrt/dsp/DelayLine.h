@@ -15,27 +15,96 @@ public:
     //==========================================================================
     // Default constructor.
 
-    DelayLine (const int maxBufferSize);
+    /**
+     * @brief Construct a new DelayLine object.
+     * @param newMaxBufferSize: maximum acceptable size of the buffer, upper limit to max delay time.
+     */
+    DelayLine (const int newMaxBufferSize);
     
     //==========================================================================
     // Allocation/Deallocation.
 
-    void prepare (const juce::dsp::ProcessSpec& spec, bool singleChannel);
+    /**
+     * @brief Call this method before doing anything else to initialize the processor.
+     * 
+     * @param spec: context informations for processor.
+     */
+    void prepare (const juce::dsp::ProcessSpec& spec);
+
+    /**
+     * @brief Initialize the members conserving a stae of the delay like the circular buffer.
+     * 
+     */
     void reset();
     
     //==========================================================================
     // Setters.
 
-    void setDelaySamples (const SampleType &delaySamples);
-    void setDelayTime (const SampleType &delayTime);
-    void setFeedback (const float &feedback);
-    
+    /**
+     * @brief Set the maxDelaySamples number.
+     * 
+     * @param maxBufferSize: maximum acceptable size of the buffer, upper limit to max the delay time.
+     */
+    void setMaxDelaySamples (const int newMaxBufferSize);
+
+    /**
+     * @brief Set the delay time given a length expressed in samples.
+     * 
+     * @param delaySamples: delay expressed in samples.
+     */
+    void setDelaySamples (const float newDelaySamples);
+
+    /**
+     * @brief Set the delay time given a length expressed in milliseconds.
+     * 
+     * @param delayTime: delay expressed in milliseconds.
+     */
+    void setDelayTime (const float delayTime);
+
+    /**
+     * @brief Set the 
+     * 
+     * @param feedback 
+     */
+    void setFeedback (const float newFeedback);
+
+    //==========================================================================
+    // Getters.
+
+    /**
+     * @brief Get the maximum delay in samples.
+     * 
+     * @return int
+     */
+    int getMaximumDelaySamples() const noexcept;
+
     //==========================================================================
     // Processing.
 
-    void putSample (const SampleType& sample);
-    SampleType popSample();
-    SampleType processSample (const int& channel, const float& inputSample);
+    /**
+     * @brief put a sample into the selected channel.
+     * 
+     * @param sample: value to store in circular buffer. 
+     * @param channel: channel where to store the sample.
+     */
+    void pushSample (const int channel, const SampleType sample);
+
+    /**
+     * @brief TODO: Description.
+     * 
+     * @param channel 
+     * @return SampleType 
+     */
+    SampleType popSample (const int channel);
+
+    /**
+     * @brief TODO: Descritpion.
+     * 
+     * @param channel 
+     * @param sample 
+     * @return SampleType 
+     */
+    SampleType processSample (const int channel, const float sample);
 
 private:
     //==========================================================================
@@ -46,15 +115,13 @@ private:
      * 
      * @tparam T: Interpolation type.
      * @param channel: Channel from which the sample must be interpolated.
-     * @param delayFrac: Fractionary part of the delay used to execute the interpolation.
-     * @param readSample: Index in bufer wehre to start read for samples.
      * @return typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::Thiran>::value, SampleType>::type
      */
     template <typename T = InterpolationType>
     typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::None>::value, SampleType>::type
-    interpolateSample (int channel, size_t readSample)
+    interpolateSample (int channel)
     {
-        return buffer.getSample(channel, static_cast<int>(readSample));
+        return buffer.getSample(channel, readPointer[static_cast<size_t> (channel)] - delayInt);
     }
     
     /**
@@ -62,22 +129,20 @@ private:
      * 
      * @tparam T: Interpolation type.
      * @param channel: Channel from which the sample must be interpolated.
-     * @param delayFrac: Fractionary part of the delay used to execute the interpolation.
-     * @param readSample: Index in bufer wehre to start read for samples.
      * @return typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::Thiran>::value, SampleType>::type
      */
     template <typename T = InterpolationType>
     typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::Linear>::value, SampleType>::type
-    interpolateSample (int channel, size_t readSample)
+    interpolateSample (int channel)
     {
         // Retriving index to read from.
-        auto index1 = static_cast<int>(readSample);
-        auto index2 = (index1 + 1) % buffer.size;
+        auto index1 = readPointer[static_cast<size_t> (channel)] - delayInt;
+        auto index2 = (index1 + 1) % maxBufferSize;
         
         // Retriving samples from indexes retrived in previous step.
         auto sample1 = buffer.getSample(channel, index1);
         auto sample2 = buffer.getSample(channel, index2);
-        return cdrt::utility::interpolation::linear<SampleType>(sample1, sample2, this->delayFrac);
+        return cdrt::utility::interpolation::linear<SampleType>(sample1, sample2, delayFrac);
     }
     
     /**
@@ -85,19 +150,17 @@ private:
      * 
      * @tparam T: Interpolation type.
      * @param channel: Channel from which the sample must be interpolated.
-     * @param delayFrac: Fractionary part of the delay used to execute the interpolation.
-     * @param readSample: Index in bufer wehre to start read for samples.
      * @return typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::Thiran>::value, SampleType>::type
      */
     template <typename T = InterpolationType>
     typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::Lagrange3rd>::value, SampleType>::type
-    interpolateSample (int channel, size_t readSample)
+    interpolateSample (int channel)
     {
         // Retriving index to read from.
-        auto index1 = static_cast<int>(readSample);
-        auto index2 = (index1 + 1) % buffer.size;
-        auto index3 = (index2 + 1) % buffer.size;
-        auto index4 = (index3 + 1) % buffer.size;
+        auto index1 = readPointer[static_cast<size_t> (channel)] - delayInt;
+        auto index2 = (index1 + 1) % maxBufferSize;
+        auto index3 = (index2 + 1) % maxBufferSize;
+        auto index4 = (index3 + 1) % maxBufferSize;
         
         // Retriving samples from indexes retrived in previous step.
         auto sample1 = buffer.getSample(channel, index1);
@@ -105,7 +168,7 @@ private:
         auto sample3 = buffer.getSample(channel, index3);
         auto sample4 = buffer.getSample(channel, index4);
         
-        return cdrt::utility::interpolation::lagrange3rd<SampleType>(sample1, sample2, sample3, sample4, this->delayFrac);
+        return cdrt::utility::interpolation::lagrange3rd<SampleType>(sample1, sample2, sample3, sample4, delayFrac);
     }
     
     /**
@@ -113,26 +176,24 @@ private:
      * 
      * @tparam T: Interpolation type.
      * @param channel: Channel from which the sample must be interpolated.
-     * @param delayFrac: Fractionary part of the delay used to execute the interpolation.
-     * @param readSample: Index in bufer wehre to start read for samples.
      * @return typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::Thiran>::value, SampleType>::type
      */
     template <typename T = InterpolationType>
     typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::Thiran>::value, SampleType>::type
-    interpolateSample (int channel, size_t readSample)
+    interpolateSample (int channel)
     {
         // Retriving index to read from.
-        auto index1 = static_cast<int>(readSample);
-        auto index2 = (index1 + 1) % buffer.size;
+        auto index1 = readPointer[static_cast<size_t> (channel)] - delayInt;
+        auto index2 = (index1 + 1) % maxBufferSize;
         
         // Retriving samples from indexes retrived in previous step.
         auto sample1 = buffer.getSample(channel, index1);
         auto sample2 = buffer.getSample(channel, index2);
         
         // Calculating result and updating prev[channel] variable.
-        auto result = cdrt::utility::interpolation::thiran<float>(sample1, sample2, this->delayFrac, alpha, prev[channel]);
+        auto result = cdrt::utility::interpolation::thiran<SampleType>(sample1, sample2, delayFrac, alpha, prev[static_cast<size_t> (channel)]);
         
-        prev[channel] = result;
+        prev[static_cast<size_t>(channel)] = result;
         
         return result;
     }
@@ -172,10 +233,10 @@ private:
     typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::Lagrange3rd>::value, void>::type
     updateInternalVariables()
     {
-        if (this->delayInt >= 1)
+        if (delayInt >= 1)
         {
-            this->delayFrac++;
-            this->delayInt--;
+            delayFrac++;
+            delayInt--;
         }
     }
 
@@ -189,13 +250,13 @@ private:
     typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::Thiran>::value, void>::type
     updateInternalVariables()
     {
-        if (this->delayFrac < (SampleType) 0.618 && this->delayInt >= 1)
+        if (delayFrac < (SampleType) 0.618 && this->delayInt >= 1)
         {
-            this->delayFrac++;
-            this->delayInt--;
+            delayFrac++;
+            delayInt--;
         }
 
-        this->alpha = (1 - this->delayFrac) / (1 + this->delayFrac);
+        alpha = (1 - this->delayFrac) / (1 + this->delayFrac);
     }
 
     //==========================================================================
@@ -209,10 +270,11 @@ private:
     juce::uint32 maxBlocks;
     
     // Delay.
-    SampleType delaySamples = 0.f;
-    SampleType delayFrac = 0.f; // Depends on delay samples.
+    float delaySamples = 0.f;
+    float delayFrac = 0.f; // Depends on delay samples.
     int delayInt = 0; // Depends on delay samples.
-    std::vector <size_t> writePointer;
+    std::vector <int> writePointer;
+    std::vector <int> readPointer;
     
     // Feedback.
     float feedback;

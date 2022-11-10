@@ -14,10 +14,10 @@ namespace conversion
 
 // Convert milliseconds to samples given the samplerate.
 // double msToSamples(const double time, const double sampleRate);
-template <typename SampleType, std::enable_if_t<std::is_floating_point<SampleType>::value, bool> = true>
-SampleType msToSamples (const SampleType& time, const SampleType& samplerate)
+template <typename SampleType, std::enable_if_t <std::is_floating_point <SampleType>::value, bool> = true>
+SampleType msToSamples (const SampleType time, const SampleType samplerate)
 {
-    return time * samplerate / 1000.0;
+    return static_cast<SampleType>(time * samplerate / 1000.0);
 }
 
 } // namespace conversion

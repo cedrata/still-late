@@ -48,14 +48,14 @@ namespace InterpolationTypes
 
 // Linear interpolation function.
 template <typename SampleType, std::enable_if_t<std::is_floating_point<SampleType>::value, bool> = true>
-SampleType linear (const SampleType &sample1, const SampleType &sample2, const float delayFrac)
+SampleType linear (const SampleType sample1, const SampleType sample2, const float delayFrac)
 {
     return sample1 * (1 - delayFrac) + sample2 * delayFrac;
 }
 
 // Lagrange interpolation function.
 template <typename SampleType, std::enable_if_t<std::is_floating_point<SampleType>::value, bool> = true>
-SampleType lagrange3rd (const SampleType &sample1, const SampleType &sample2, const SampleType &sample3, const SampleType &sample4, const float delayFrac)
+SampleType lagrange3rd (const SampleType sample1, const SampleType sample2, const SampleType sample3, const SampleType &sample4, const float delayFrac)
 {
     float d1 = delayFrac - 1.f;
     float d2 = delayFrac - 2.f;
@@ -71,7 +71,7 @@ SampleType lagrange3rd (const SampleType &sample1, const SampleType &sample2, co
 
 // Thiran interpolation function.
 template <typename SampleType>
-SampleType thiran (const SampleType &sample1, const SampleType &sample2, const float delayFrac, const float alpha, const SampleType &prev)
+SampleType thiran (const SampleType sample1, const SampleType sample2, const float delayFrac, const SampleType alpha, const SampleType &prev)
 {
     // Branched version (slower execution):
     // if (delayFrac == 0) return sample1;
