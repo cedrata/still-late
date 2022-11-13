@@ -87,7 +87,7 @@ public:
      * @param sample: value to store in circular buffer. 
      * @param channel: channel where to store the sample.
      */
-    void pushSample (const int channel, const SampleType sample);
+    void putSample (const int channel, const SampleType sample);
 
     /**
      * @brief TODO: Description.

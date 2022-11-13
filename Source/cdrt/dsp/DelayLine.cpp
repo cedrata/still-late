@@ -63,10 +63,15 @@ template <typename SampleType, typename InterpolationType>
 void DelayLine <SampleType, InterpolationType>::setDelaySamples (const float newDelaySamples)
 {
     jassert (juce::isPositiveAndBelow (newDelaySamples, maxBufferSize));
+    
+    auto toIncrement = static_cast<int>(std::floor(newDelaySamples - delaySamples));
+    for (auto &i: readPointer)
+        i = (i + toIncrement) % maxBufferSize;
 
     delaySamples = newDelaySamples;
     delayInt = static_cast<int> (std::floor (delaySamples));
     delayFrac = delaySamples - delayInt;
+    
 
     updateInternalVariables();
 }
@@ -97,11 +102,14 @@ int DelayLine <SampleType, InterpolationType>::getMaximumDelaySamples() const no
 // Processing.
 
 template <typename SampleType, typename InterpolationType>
-void DelayLine <SampleType, InterpolationType>::pushSample (const int channel, const SampleType sample)
+void DelayLine <SampleType, InterpolationType>::putSample (const int channel, const SampleType sample)
 {
     jassert (juce::isPositiveAndBelow (channel, numChannels));
-
-    buffer.setSample (channel, writePointer[static_cast<size_t>(channel)], sample);
+    
+    auto interpolation = interpolateSample(channel);
+    auto toWriteSample = sample + interpolation * feedback;
+    
+    buffer.setSample (channel, writePointer[static_cast<size_t>(channel)], toWriteSample);
     writePointer[static_cast<size_t> (channel)] = (writePointer[static_cast<size_t> (channel)] + 1) % maxBufferSize;
 }
 
@@ -111,7 +119,8 @@ SampleType DelayLine <SampleType, InterpolationType>::popSample (const int chann
     jassert (juce::isPositiveAndBelow (channel, numChannels));
 
     // Read pos is used paired with the delayInt value.
-    auto result = interpolateSample (channel);
+//    auto result = interpolateSample<InterpolationType> (channel);
+    auto result = buffer.getSample(channel, readPointer[static_cast<size_t> (channel)]);
     readPointer[static_cast<size_t> (channel)] = (readPointer[static_cast<size_t> (channel)] + 1) % maxBufferSize;
 
     return result;
@@ -120,8 +129,7 @@ SampleType DelayLine <SampleType, InterpolationType>::popSample (const int chann
 template <typename SampleType, typename InterpolationType>
 SampleType DelayLine <SampleType, InterpolationType>::processSample (const int channel, const float sample)
 {
-    pushSample (channel, sample);
-
+    putSample (channel, sample);
     return popSample (channel);
 }
 
