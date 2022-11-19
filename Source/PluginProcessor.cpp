@@ -103,12 +103,16 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
     juce::ignoreUnused (layouts);
     return true;
   #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-        return false;
-
+    if (layouts.getMainInputChannelSet() == juce::AudioChannelSet::mono()
+         && layouts.getMainOutputChannelSet() == juce::AudioChannelSet::stereo())
+            return true;
+        
+        if (layouts.getMainInputChannelSet() == juce::AudioChannelSet::stereo()
+         && layouts.getMainOutputChannelSet() == juce::AudioChannelSet::stereo())
+            return true;
+        
+        else
+            return false;
     // This checks if the input layout matches the output layout
    #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
