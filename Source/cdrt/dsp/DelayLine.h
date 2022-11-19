@@ -77,6 +77,17 @@ public:
      * @return int
      */
     int getMaximumDelaySamples() const noexcept;
+    
+    /**
+     * @brief Get the value stored at a precise index and channel in the circular buffer without checks on the index value. This method exist for testing purposes but can be used as you prefer if you are creative enough :)
+     * Thi method will not interact with the values of read and write pointer, so you can read the same value many times without altering the buffer.
+     *
+     * @param channel: chanel where to get the sample from.
+     * @param index: value of the index to get the value from.
+     * @return SampleType
+     *
+     */
+    SampleType getSample(const int channel, const int index) const;
 
     //==========================================================================
     // Processing.
@@ -121,7 +132,7 @@ private:
     typename std::enable_if <std::is_same <T, cdrt::utility::interpolation::InterpolationTypes::None>::value, SampleType>::type
     interpolateSample (int channel)
     {
-        return buffer.getSample(channel, readPointer[static_cast<size_t> (channel)] - delayInt);
+        return buffer.getSample(channel, writePointer[static_cast<size_t> (channel)]);
     }
     
     /**
@@ -136,13 +147,15 @@ private:
     interpolateSample (int channel)
     {
         // Retriving index to read from.
-        auto index1 = readPointer[static_cast<size_t> (channel)] - delayInt;
+        auto index1 = writePointer[static_cast<size_t> (channel)];
         auto index2 = (index1 + 1) % maxBufferSize;
         
         // Retriving samples from indexes retrived in previous step.
         auto sample1 = buffer.getSample(channel, index1);
         auto sample2 = buffer.getSample(channel, index2);
+        
         return cdrt::utility::interpolation::linear<SampleType>(sample1, sample2, delayFrac);
+        updateInternalVariables();
     }
     
     /**
@@ -157,7 +170,7 @@ private:
     interpolateSample (int channel)
     {
         // Retriving index to read from.
-        auto index1 = readPointer[static_cast<size_t> (channel)] - delayInt;
+        auto index1 = writePointer[static_cast<size_t> (channel)];
         auto index2 = (index1 + 1) % maxBufferSize;
         auto index3 = (index2 + 1) % maxBufferSize;
         auto index4 = (index3 + 1) % maxBufferSize;
@@ -168,7 +181,11 @@ private:
         auto sample3 = buffer.getSample(channel, index3);
         auto sample4 = buffer.getSample(channel, index4);
         
-        return cdrt::utility::interpolation::lagrange3rd<SampleType>(sample1, sample2, sample3, sample4, delayFrac);
+        auto res = cdrt::utility::interpolation::lagrange3rd<SampleType>(sample1, sample2, sample3, sample4, delayFrac);
+        
+        updateInternalVariables();
+        
+        return res;
     }
     
     /**
@@ -183,7 +200,7 @@ private:
     interpolateSample (int channel)
     {
         // Retriving index to read from.
-        auto index1 = readPointer[static_cast<size_t> (channel)] - delayInt;
+        auto index1 = writePointer[static_cast<size_t> (channel)];
         auto index2 = (index1 + 1) % maxBufferSize;
         
         // Retriving samples from indexes retrived in previous step.
@@ -194,6 +211,8 @@ private:
         auto result = cdrt::utility::interpolation::thiran<SampleType>(sample1, sample2, delayFrac, alpha, prev[static_cast<size_t> (channel)]);
         
         prev[static_cast<size_t>(channel)] = result;
+        
+        updateInternalVariables();
         
         return result;
     }

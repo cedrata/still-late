@@ -64,14 +64,16 @@ void DelayLine <SampleType, InterpolationType>::setDelaySamples (const float new
 {
     jassert (juce::isPositiveAndBelow (newDelaySamples, maxBufferSize));
     
-    auto toIncrement = static_cast<int>(std::floor(newDelaySamples - delaySamples));
+    auto toIncrement = static_cast<int>(std::trunc (delaySamples - newDelaySamples));
     for (auto &i: readPointer)
-        i = (i + toIncrement) % maxBufferSize;
+    {
+        i += toIncrement;
+        i = (i % maxBufferSize + maxBufferSize) % maxBufferSize;
+    }
 
     delaySamples = newDelaySamples;
-    delayInt = static_cast<int> (std::floor (delaySamples));
+    delayInt = static_cast<int> (std::trunc (delaySamples));
     delayFrac = delaySamples - delayInt;
-    
 
     updateInternalVariables();
 }
@@ -96,6 +98,12 @@ template <typename SampleType, typename InterpolationType>
 int DelayLine <SampleType, InterpolationType>::getMaximumDelaySamples() const noexcept
 {
     return maxBufferSize - 1;
+}
+
+template <typename SampleType, typename InterpolationType>
+SampleType DelayLine <SampleType, InterpolationType>::getSample(const int channel, const int index) const
+{
+    return buffer.getSample(channel, index);
 }
 
 //==============================================================================
