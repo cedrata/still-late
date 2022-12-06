@@ -1,6 +1,9 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include "cdrt/dsp/DelayLine.h"
+#include "cdrt/utility/Interpolation.h"
+
 
 class AudioPluginAudioProcessor : public juce::AudioProcessor
 {
@@ -37,5 +40,8 @@ public:
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
     // Audio parameters.
-     juce::AudioProcessorValueTreeState apvts;
+    juce::AudioProcessorValueTreeState apvts;
+    
+    // Delay.
+    cdrt::dsp::DelayLine<float, cdrt::utility::interpolation::InterpolationTypes::Linear> delayLine = {0};
 };
