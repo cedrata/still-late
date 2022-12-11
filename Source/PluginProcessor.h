@@ -43,5 +43,5 @@ private:
     juce::AudioProcessorValueTreeState apvts;
     
     // Delay.
-    cdrt::dsp::DelayLine<float, cdrt::utility::interpolation::InterpolationTypes::Linear> delayLine = {0};
+    cdrt::dsp::DelayLine<float, cdrt::utility::interpolation::InterpolationTypes::Linear> delayLine;
 };

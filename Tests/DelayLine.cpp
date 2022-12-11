@@ -9,9 +9,10 @@ std::array<float, 20> inputSamples{-1.0f, -0.9f, -0.8f, -0.7f, -0.6f, -0.5f, -0.
 // None interpolation.
 TEST_CASE("Delay Line put/get sample w/ None interpolation.")
 {
-    auto dl = cdrt::dsp::DelayLine<float, cdrt::utility::interpolation::InterpolationTypes::None> (5);
+    cdrt::dsp::DelayLine<float, cdrt::utility::interpolation::InterpolationTypes::None> dl;
     
     dl.prepare (ps);
+    dl.setMaxDelaySamples(5);
     dl.reset();
     
     // Being the None interpolation only the int part of delay will be considered.
@@ -39,9 +40,10 @@ TEST_CASE("Delay Line put/get sample w/ None interpolation.")
 // Linear interpolation.
 TEST_CASE("Delay Line put/get sample w/ Linear interpolation.")
 {
-    auto dl = cdrt::dsp::DelayLine<float, cdrt::utility::interpolation::InterpolationTypes::Linear> (5);
+    cdrt::dsp::DelayLine<float, cdrt::utility::interpolation::InterpolationTypes::Linear> dl;
     
     dl.prepare (ps);
+    dl.setMaxDelaySamples(5);
     dl.reset();
     
     dl.setDelaySamples (1.5f);

@@ -19,7 +19,7 @@ public:
      * @brief Construct a new DelayLine object.
      * @param newMaxBufferSize: maximum acceptable size of the buffer, upper limit to max delay time.
      */
-    DelayLine (const int newMaxBufferSize);
+    DelayLine ();
     
     //==========================================================================
     // Allocation/Deallocation.

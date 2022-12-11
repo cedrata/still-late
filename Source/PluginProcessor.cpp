@@ -95,16 +95,16 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = static_cast<juce::uint32> (samplesPerBlock);
-    spec.numChannels = static_cast<juce::uint32> (getTotalNumOutputChannels());
+    spec.numChannels = static_cast<juce::uint32> (2);
     
     // Delay line preparation.
     delayLine.prepare (spec);
-    
     delayLine.setMaxDelaySamples (3 * static_cast<int> (sampleRate));
-    delayLine.setDelaySamples(88200.0f);
-    delayLine.setFeedback (0.0f);
-    
     delayLine.reset();
+    
+    // Temporary delay setup, must become dynaimc with parameters.
+    delayLine.setDelaySamples(2 * static_cast<int> (sampleRate));
+    delayLine.setFeedback (0.0f);
 }
 
 void AudioPluginAudioProcessor::releaseResources()
@@ -155,12 +155,15 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
          buffer.copyFrom(i, 0.0f, buffer, 0, 0, buffer.getNumSamples());
 
     // Plugin processing.
+    float newSample;
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
         {
-            channelData[sample] = 0.0f;
+             // channelData[sample] = 0.0f;
+             newSample = delayLine.processSample(channel, channelData[sample]);
+             channelData[sample] = newSample;
         }
     }
 }
