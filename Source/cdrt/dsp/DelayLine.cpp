@@ -130,7 +130,7 @@ SampleType DelayLine <SampleType, InterpolationType>::popSample (const int chann
     // Read pos is used paired with the delayInt value.
 //    auto result = interpolateSample<InterpolationType> (channel);
     auto result = buffer.getSample(channel, readPointer[static_cast<size_t> (channel)]);
-    readPointer[static_cast<size_t> (channel)] = (readPointer[static_cast<size_t> (channel)] + delayInt) % maxBufferSize;
+    readPointer[static_cast<size_t> (channel)] = (readPointer[static_cast<size_t> (channel)] + 1) % maxBufferSize;
 
     return result;
 }
