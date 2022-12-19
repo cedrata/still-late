@@ -5,7 +5,7 @@
 #include "cdrt/utility/Interpolation.h"
 
 
-class AudioPluginAudioProcessor : public juce::AudioProcessor
+class AudioPluginAudioProcessor : public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     AudioPluginAudioProcessor();
@@ -37,11 +37,24 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
     
+    // AudioProcessorValueTreeSTate::Listener
+    void parameterChanged (const juce::String& parameterID, float newValue) override;
+    
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
     // Audio parameters.
     juce::AudioProcessorValueTreeState apvts;
     
     // Delay.
-    cdrt::dsp::DelayLine<float, cdrt::utility::interpolation::InterpolationTypes::Linear> delayLine;
+    cdrt::dsp::DelayLine<float, cdrt::utility::interpolation::InterpolationTypes::Lagrange3rd> delayLine;
+    
+    // Generic parameters.
+    std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> inputSmoothed;
+    std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> outputSmoothed;
+    
+    // Delay parameters.
+    std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayLineTimeValueSmoothed;
+    std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayLineFeedbackSmoothed;
+    std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayDrySmoothed;
+    std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayWetSmoothed;
 };

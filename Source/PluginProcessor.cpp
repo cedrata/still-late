@@ -1,6 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "cdrt/helper/Parameters.h"
+#include "cdrt/utility/Conversion.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
 //==============================================================================
@@ -99,12 +100,29 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     
     // Delay line preparation.
     delayLine.prepare (spec);
-    delayLine.setMaxDelaySamples (3 * static_cast<int> (sampleRate));
-    delayLine.reset();
     
     // Temporary delay setup, must become dynaimc with parameters.
+    delayLine.setMaxDelaySamples (3 * static_cast<int> (sampleRate));
     delayLine.setDelaySamples(2 * static_cast<int> (sampleRate));
     delayLine.setFeedback (0.0f);
+    
+    // Generic parameters init.
+    // Reading values from apvts.
+    auto delayTimeParameter = static_cast<float>(cdrt::utility::conversion::msToSamples<double> (apvts.getRawParameterValue("time")->load(), sampleRate));
+    auto delayFeedbackParameter = apvts.getRawParameterValue("feedback")->load();
+    
+    // Apply values from apvts.
+    for (auto& value: delayLineTimeValueSmoothed)
+    {
+        value.reset(sampleRate, 2.5f);
+        value.setTargetValue(delayTimeParameter);
+    }
+    
+    for (auto& value: delayLineFeedbackSmoothed)
+    {
+        value.reset(sampleRate, 0.05f);
+        value.setTargetValue(delayFeedbackParameter);
+    }
 }
 
 void AudioPluginAudioProcessor::releaseResources()
@@ -152,7 +170,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // copied on the second channel buffer.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
          // buffer.clear (i, 0, buffer.getNumSamples());
-         buffer.copyFrom(i, 0.0f, buffer, 0, 0, buffer.getNumSamples());
+         buffer.copyFrom(i, 0, buffer, 0, 0, buffer.getNumSamples());
 
     // Plugin processing.
     float newSample;
@@ -161,7 +179,6 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         auto* channelData = buffer.getWritePointer (channel);
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
         {
-             // channelData[sample] = 0.0f;
              newSample = delayLine.processSample(channel, channelData[sample]);
              channelData[sample] = newSample;
         }
@@ -176,8 +193,8 @@ bool AudioPluginAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 {
-    // return new AudioPluginAudioProcessorEditor (*this);
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new AudioPluginAudioProcessorEditor (*this);
+    // return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -194,6 +211,36 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
     juce::ignoreUnused (data, sizeInBytes);
+}
+
+//==============================================================================
+void AudioPluginAudioProcessor::parameterChanged (const juce::String& parameterID, float newValue)
+{
+    juce::ignoreUnused(parameterID, newValue);
+    if (parameterID == "input")
+    {
+        // TODO: ...
+    }
+    else if (parameterID == "output")
+    {
+        // TODO: ...
+    }
+    else if (parameterID == "time")
+    {
+        // TODO: ...
+    }
+    else if (parameterID == "feedback")
+    {
+        // TODO: ...
+    }
+    else if (parameterID == "dry")
+    {
+        // TODO: ...
+    }
+    else if (parameterID == "wet")
+    {
+        // TODO: ...
+    }
 }
 
 //==============================================================================
