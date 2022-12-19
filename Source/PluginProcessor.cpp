@@ -108,10 +108,30 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     
     // Generic parameters init.
     // Reading values from apvts.
-    auto delayTimeParameter = static_cast<float>(cdrt::utility::conversion::msToSamples<double> (apvts.getRawParameterValue("time")->load(), sampleRate));
+    auto inputGainParameter = apvts.getRawParameterValue("input")->load();
+    auto outputGainParameter = apvts.getRawParameterValue("output")->load();
+    
+    auto delayTimeParameter = static_cast<float> (cdrt::utility::conversion::msToSamples<double> (apvts.getRawParameterValue("time")->load(), sampleRate));
     auto delayFeedbackParameter = apvts.getRawParameterValue("feedback")->load();
     
+    auto delayDryParameter = apvts.getRawParameterValue("dry")->load();
+    auto delayWetParameter = apvts.getRawParameterValue("wet")->load();
+    
     // Apply values from apvts.
+    
+    // TODO: Convert to function..
+    for (auto& value: inputSmoothed)
+    {
+        value.reset(sampleRate, 0.5f);
+        value.setTargetValue(delayTimeParameter);
+    }
+    
+    for (auto& value: inputSmoothed)
+    {
+        value.reset(sampleRate, 0.5f);
+        value.setTargetValue(delayTimeParameter);
+    }
+    
     for (auto& value: delayLineTimeValueSmoothed)
     {
         value.reset(sampleRate, 2.5f);
@@ -122,6 +142,18 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     {
         value.reset(sampleRate, 0.05f);
         value.setTargetValue(delayFeedbackParameter);
+    }
+    
+    for (auto& value: delayLineDrySmoothed)
+    {
+        value.reset(sampleRate, 0.5f);
+        value.setTargetValue(delayTimeParameter);
+    }
+    
+    for (auto& value: delayLineWetSmoothed)
+    {
+        value.reset(sampleRate, 0.5f);
+        value.setTargetValue(delayTimeParameter);
     }
 }
 
@@ -216,30 +248,47 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
 //==============================================================================
 void AudioPluginAudioProcessor::parameterChanged (const juce::String& parameterID, float newValue)
 {
-    juce::ignoreUnused(parameterID, newValue);
     if (parameterID == "input")
     {
-        // TODO: ...
+        for (auto& value: inputSmoothed)
+        {
+            value.setTargetValue(newValue);
+        }
     }
     else if (parameterID == "output")
     {
-        // TODO: ...
+        for (auto& value: outputSmoothed)
+        {
+            value.setTargetValue(newValue);
+        }
     }
     else if (parameterID == "time")
     {
-        // TODO: ...
+        for (auto& value: delayLineTimeValueSmoothed)
+        {
+            value.setTargetValue(newValue);
+        }
     }
     else if (parameterID == "feedback")
     {
-        // TODO: ...
+        for (auto& value: delayLineFeedbackSmoothed)
+        {
+            value.setTargetValue(newValue);
+        }
     }
     else if (parameterID == "dry")
     {
-        // TODO: ...
+        for (auto& value: delayLineDrySmoothed)
+        {
+            value.setTargetValue(newValue);
+        }
     }
     else if (parameterID == "wet")
     {
-        // TODO: ...
+        for (auto& value: delayLineWetSmoothed)
+        {
+            value.setTargetValue(newValue);
+        }
     }
 }
 

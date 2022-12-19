@@ -55,6 +55,6 @@ private:
     // Delay parameters.
     std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayLineTimeValueSmoothed;
     std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayLineFeedbackSmoothed;
-    std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayDrySmoothed;
-    std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayWetSmoothed;
+    std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayLineDrySmoothed;
+    std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayLineWetSmoothed;
 };
