@@ -138,7 +138,7 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         value.setTargetValue(inputGainParameter);
     }
     
-    for (auto& value: inputSmoothed)
+    for (auto& value: outputSmoothed)
     {
         value.reset(sampleRate, 0.25f);
         value.setTargetValue(outputGainParameter);
@@ -209,7 +209,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    const auto routing = apvts.getRawParameterValue("routing")->load();
+    // const auto routing = apvts.getRawParameterValue("routing")->load();
     
     // If the input signal is mono type the single channel will be
     // copied on the second channel buffer.
