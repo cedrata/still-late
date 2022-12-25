@@ -15,10 +15,22 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                      #endif
                        ), apvts(*this, nullptr, "parameters", cdrt::helper::parameters::createLayout())
 {
+    apvts.addParameterListener("input", this);
+    apvts.addParameterListener("output", this);
+    apvts.addParameterListener("time", this);
+    apvts.addParameterListener("feedback", this);
+    apvts.addParameterListener("dry", this);
+    apvts.addParameterListener("wet", this);
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
 {
+    apvts.removeParameterListener("input", this);
+    apvts.removeParameterListener("output", this);
+    apvts.removeParameterListener("time", this);
+    apvts.removeParameterListener("feedback", this);
+    apvts.removeParameterListener("dry", this);
+    apvts.removeParameterListener("wet", this);
 }
 
 //==============================================================================
@@ -122,14 +134,14 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     // TODO: Convert to function..
     for (auto& value: inputSmoothed)
     {
-        value.reset(sampleRate, 0.5f);
-        value.setTargetValue(delayTimeParameter);
+        value.reset(sampleRate, 0.25f);
+        value.setTargetValue(inputGainParameter);
     }
     
     for (auto& value: inputSmoothed)
     {
-        value.reset(sampleRate, 0.5f);
-        value.setTargetValue(delayTimeParameter);
+        value.reset(sampleRate, 0.25f);
+        value.setTargetValue(outputGainParameter);
     }
     
     for (auto& value: delayLineTimeValueSmoothed)
@@ -146,14 +158,14 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     
     for (auto& value: delayLineDrySmoothed)
     {
-        value.reset(sampleRate, 0.5f);
-        value.setTargetValue(delayTimeParameter);
+        value.reset(sampleRate, 0.25f);
+        value.setTargetValue(delayDryParameter);
     }
     
     for (auto& value: delayLineWetSmoothed)
     {
-        value.reset(sampleRate, 0.5f);
-        value.setTargetValue(delayTimeParameter);
+        value.reset(sampleRate, 0.25f);
+        value.setTargetValue(delayWetParameter);
     }
 }
 
@@ -197,6 +209,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
+    const auto routing = apvts.getRawParameterValue("routing")->load();
     
     // If the input signal is mono type the single channel will be
     // copied on the second channel buffer.
@@ -208,11 +221,22 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     float newSample;
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
+        // Get data for the current channel.
         auto* channelData = buffer.getWritePointer (channel);
         for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
         {
-             newSample = delayLine.processSample(channel, channelData[sample]);
-             channelData[sample] = newSample;
+            // Read the parameter to increment for the current channel.
+            const auto updatedInput = inputSmoothed[static_cast<size_t>(channel)].getNextValue();
+            const auto updatedOutput = outputSmoothed[static_cast<size_t>(channel)].getNextValue();
+            const auto updatedWet = delayLineWetSmoothed[static_cast<size_t>(channel)].getNextValue();
+            const auto updatedDry = delayLineDrySmoothed[static_cast<size_t>(channel)].getNextValue();
+            
+            // Apply the time and feedback for
+            delayLine.setDelaySamples(delayLineTimeValueSmoothed[static_cast<size_t>(channel)].getNextValue());
+            delayLine.setFeedback(delayLineFeedbackSmoothed[static_cast<size_t>(channel)].getNextValue());
+            
+            newSample = delayLine.processSample(channel, channelData[sample] * updatedInput);
+            channelData[sample] = ((channelData[sample] * updatedDry) + (updatedWet * newSample)) * updatedOutput;
         }
     }
 }
@@ -225,8 +249,8 @@ bool AudioPluginAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 {
-    return new AudioPluginAudioProcessorEditor (*this);
-    // return new juce::GenericAudioProcessorEditor(*this);
+//    return new AudioPluginAudioProcessorEditor (*this);
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================

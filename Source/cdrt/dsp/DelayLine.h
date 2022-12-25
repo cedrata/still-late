@@ -52,6 +52,7 @@ public:
      * 
      * @param delaySamples: delay expressed in samples.
      */
+    // TODO: add the chanel as parameter.
     void setDelaySamples (const float newDelaySamples);
 
     /**
@@ -59,6 +60,7 @@ public:
      * 
      * @param delayTime: delay expressed in milliseconds.
      */
+    // TODO: add the chanel as parameter.
     void setDelayTime (const float delayTime);
 
     /**
