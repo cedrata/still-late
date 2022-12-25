@@ -230,12 +230,15 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             const auto updatedOutput = outputSmoothed[static_cast<size_t>(channel)].getNextValue();
             const auto updatedWet = delayLineWetSmoothed[static_cast<size_t>(channel)].getNextValue();
             const auto updatedDry = delayLineDrySmoothed[static_cast<size_t>(channel)].getNextValue();
+            const auto updatedTime = delayLineTimeValueSmoothed[static_cast<size_t>(channel)].getNextValue();
             
             // Apply the time and feedback for
-            delayLine.setDelaySamples(delayLineTimeValueSmoothed[static_cast<size_t>(channel)].getNextValue());
-            delayLine.setFeedback(delayLineFeedbackSmoothed[static_cast<size_t>(channel)].getNextValue());
+            delayLine.setDelayTime (delayLineTimeValueSmoothed[static_cast<size_t> (channel)].getNextValue());
+            delayLine.setFeedback (delayLineFeedbackSmoothed[static_cast<size_t> (channel)].getNextValue());
             
-            newSample = delayLine.processSample(channel, channelData[sample] * updatedInput);
+            
+            
+            newSample = delayLine.processSample (channel, channelData[sample] * updatedInput);
             channelData[sample] = ((channelData[sample] * updatedDry) + (updatedWet * newSample)) * updatedOutput;
         }
     }
