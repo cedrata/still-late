@@ -146,7 +146,7 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     
     for (auto& value: delayLineTimeValueSmoothed)
     {
-        value.reset(sampleRate, 2.5f);
+        value.reset(sampleRate, 1.0f);
         value.setTargetValue(delayTimeParameter);
     }
     

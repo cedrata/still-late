@@ -64,13 +64,6 @@ template <typename SampleType, typename InterpolationType>
 void DelayLine <SampleType, InterpolationType>::setDelaySamples (const float newDelaySamples)
 {
     jassert (juce::isPositiveAndBelow (newDelaySamples, maxBufferSize));
-    
-    auto toIncrement = static_cast<int>(std::trunc (delaySamples - newDelaySamples));
-    for (auto &i: readPointer)
-    {
-        i += toIncrement;
-        i = (i % maxBufferSize + maxBufferSize) % maxBufferSize;
-    }
 
     delaySamples = newDelaySamples;
     delayInt = static_cast<int> (std::trunc (delaySamples));
@@ -129,7 +122,11 @@ SampleType DelayLine <SampleType, InterpolationType>::popSample (const int chann
 
     // Read pos is used paired with the delayInt value.
 //    auto result = interpolateSample<InterpolationType> (channel);
-    auto result = buffer.getSample(channel, readPointer[static_cast<size_t> (channel)]);
+    
+    // Calculate the delayed delay index.
+    // This calulation is required because it will calculate the module of negative values.
+    const auto readIndex = ((readPointer[static_cast<size_t> (channel)] - delayInt) % getMaximumDelaySamples() + getMaximumDelaySamples()) % getMaximumDelaySamples();
+    auto result = buffer.getSample(channel, readIndex);
     readPointer[static_cast<size_t> (channel)] = (readPointer[static_cast<size_t> (channel)] + 1) % maxBufferSize;
 
     return result;
