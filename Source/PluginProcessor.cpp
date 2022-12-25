@@ -123,7 +123,7 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     auto inputGainParameter = apvts.getRawParameterValue("input")->load();
     auto outputGainParameter = apvts.getRawParameterValue("output")->load();
     
-    auto delayTimeParameter = static_cast<float> (cdrt::utility::conversion::msToSamples<double> (apvts.getRawParameterValue("time")->load(), sampleRate));
+    auto delayTimeParameter = apvts.getRawParameterValue("time")->load();
     auto delayFeedbackParameter = apvts.getRawParameterValue("feedback")->load();
     
     auto delayDryParameter = apvts.getRawParameterValue("dry")->load();
@@ -233,7 +233,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             const auto updatedTime = delayLineTimeValueSmoothed[static_cast<size_t>(channel)].getNextValue();
             
             // Apply the time and feedback for
-            delayLine.setDelayTime (delayLineTimeValueSmoothed[static_cast<size_t> (channel)].getNextValue());
+            delayLine.setDelayTime (updatedTime);
             delayLine.setFeedback (delayLineFeedbackSmoothed[static_cast<size_t> (channel)].getNextValue());
             
             
