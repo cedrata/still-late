@@ -230,7 +230,13 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             const auto updatedOutput = outputSmoothed[static_cast<size_t>(channel)].getNextValue();
             const auto updatedWet = delayLineWetSmoothed[static_cast<size_t>(channel)].getNextValue();
             const auto updatedDry = delayLineDrySmoothed[static_cast<size_t>(channel)].getNextValue();
-            const auto updatedTime = delayLineTimeValueSmoothed[static_cast<size_t>(channel)].getNextValue();
+            
+            // Delay time is critical, smoothing can get it wrong sometimes and goes above the given target values.
+            auto updatedTime = delayLineTimeValueSmoothed[static_cast<size_t>(channel)].getNextValue();
+            
+            updatedTime = (updatedTime < 0.0f) * 0 + (updatedTime > 3000.0f) * 3000.0f + (updatedTime <= 3000.0f && updatedTime >= 0.0f) * updatedTime;
+            
+            
             
             // Apply the time and feedback for
             delayLine.setDelayTime (updatedTime);

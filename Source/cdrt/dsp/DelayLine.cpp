@@ -56,7 +56,7 @@ void DelayLine <SampleType, InterpolationType>::setMaxDelaySamples (const int ne
 {
     jassert (newMaxBufferSize >= 0);
 
-    maxBufferSize = newMaxBufferSize;
+    maxBufferSize = newMaxBufferSize + 1;
     buffer.setSize (buffer.getNumChannels(), maxBufferSize, false, false, true);
 }
 
