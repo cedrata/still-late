@@ -56,19 +56,19 @@ void DelayLine <SampleType, InterpolationType>::setMaxDelaySamples (const int ne
 {
     jassert (newMaxBufferSize >= 0);
 
-    maxBufferSize = newMaxBufferSize + 1;
+    maxBufferSize = newMaxBufferSize;
     buffer.setSize (buffer.getNumChannels(), maxBufferSize, false, false, true);
 }
 
 template <typename SampleType, typename InterpolationType>
 void DelayLine <SampleType, InterpolationType>::setDelaySamples (const float newDelaySamples)
 {
-    jassert (juce::isPositiveAndBelow (newDelaySamples, maxBufferSize));
+    jassert (juce::isPositiveAndNotGreaterThan (newDelaySamples, maxBufferSize));
 
     delaySamples = newDelaySamples;
     delayInt = static_cast<int> (std::trunc (delaySamples));
     delayFrac = delaySamples - delayInt;
-
+    
     updateInternalVariables();
 }
 
@@ -91,7 +91,7 @@ void DelayLine <SampleType, InterpolationType>::setFeedback (const float newFeed
 template <typename SampleType, typename InterpolationType>
 int DelayLine <SampleType, InterpolationType>::getMaximumDelaySamples() const noexcept
 {
-    return maxBufferSize - 1;
+    return maxBufferSize;
 }
 
 template <typename SampleType, typename InterpolationType>
@@ -112,22 +112,19 @@ void DelayLine <SampleType, InterpolationType>::putSample (const int channel, co
     auto toWriteSample = sample + interpolation * feedback;
     
     buffer.setSample (channel, writePointer[static_cast<size_t>(channel)], toWriteSample);
-    writePointer[static_cast<size_t> (channel)] = (writePointer[static_cast<size_t> (channel)] + 1) % maxBufferSize;
+    writePointer[static_cast<size_t> (channel)] = (writePointer[static_cast<size_t> (channel)] + 1) % getMaximumDelaySamples();
 }
 
 template <typename SampleType, typename InterpolationType>
-SampleType DelayLine <SampleType, InterpolationType>::popSample (const int channel)
+SampleType DelayLine <SampleType, InterpolationType>::popSample (const int channel, const bool updatePointer)
 {
     jassert (juce::isPositiveAndBelow (channel, numChannels));
 
-    // Read pos is used paired with the delayInt value.
-//    auto result = interpolateSample<InterpolationType> (channel);
-    
     // Calculate the delayed delay index.
     // This calulation is required because it will calculate the module of negative values.
     const auto readIndex = ((readPointer[static_cast<size_t> (channel)] - delayInt) % getMaximumDelaySamples() + getMaximumDelaySamples()) % getMaximumDelaySamples();
     auto result = buffer.getSample(channel, readIndex);
-    readPointer[static_cast<size_t> (channel)] = (readPointer[static_cast<size_t> (channel)] + 1) % maxBufferSize;
+    readPointer[static_cast<size_t> (channel)] = (updatePointer * ((readPointer[static_cast<size_t> (channel)] + 1) % getMaximumDelaySamples())) + (!updatePointer * readPointer[static_cast<size_t> (channel)]);
 
     return result;
 }

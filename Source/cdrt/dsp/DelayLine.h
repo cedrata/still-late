@@ -103,10 +103,11 @@ public:
     /**
      * @brief TODO: Description.
      * 
-     * @param channel 
+     * @param channel
+     * @param updatePointer
      * @return SampleType 
      */
-    SampleType popSample (const int channel);
+    SampleType popSample (const int channel, const bool updatePointer = true);
 
     /**
      * @brief TODO: Descritpion.
