@@ -62,6 +62,4 @@ private:
     
     // Used to know if the playerhead in the last process block execution was running or not to know if the delya line have to be reset.
     bool wasPlaying = true;
-    // juce::AudioPlayHead playHead;
-    
 };

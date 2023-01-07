@@ -219,7 +219,6 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     // Plugin processing.
     float newSample;
-    float toProcessSample;
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         // Get data for the current channel.
