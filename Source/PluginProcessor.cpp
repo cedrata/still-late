@@ -171,7 +171,6 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 
 void AudioPluginAudioProcessor::releaseResources()
 {
-    delayLine.reset();
 }
 
 bool AudioPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -208,6 +207,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
+    
 
     // const auto routing = apvts.getRawParameterValue("routing")->load();
     
@@ -219,6 +219,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     // Plugin processing.
     float newSample;
+    float toProcessSample;
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         // Get data for the current channel.
@@ -234,15 +235,22 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             // Delay time is critical, smoothing can get it wrong sometimes and goes above the given target values.
             auto updatedTime = delayLineTimeValueSmoothed[static_cast<size_t>(channel)].getNextValue();
             
-            updatedTime = (updatedTime < 0.0f) * 0 + (updatedTime > 3000.0f) * 3000.0f + (updatedTime <= 3000.0f && updatedTime >= 0.0f) * updatedTime;
-            
-            
+            // Branchelss code for:
+            // if (updatedTime < 0.0f)
+            // {
+            //     updatedTime = 0.0f;
+            // }
+            // else if (updatedTime > 3000.0f)
+            // {
+            //     updatedTime = 3000.0f;
+            // }
+            updatedTime = (updatedTime < 0.0f) * 0
+                + (updatedTime > 3000.0f) * 3000.0f
+                + (updatedTime <= 3000.0f && updatedTime >= 0.0f) * updatedTime;
             
             // Apply the time and feedback for
             delayLine.setDelayTime (updatedTime);
             delayLine.setFeedback (delayLineFeedbackSmoothed[static_cast<size_t> (channel)].getNextValue());
-            
-            
             
             newSample = delayLine.processSample (channel, channelData[sample] * updatedInput);
             channelData[sample] = ((channelData[sample] * updatedDry) + (updatedWet * newSample)) * updatedOutput;

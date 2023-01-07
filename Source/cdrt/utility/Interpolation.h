@@ -50,7 +50,7 @@ namespace InterpolationTypes
 template <typename SampleType, std::enable_if_t<std::is_floating_point<SampleType>::value, bool> = true>
 SampleType linear (const SampleType sample1, const SampleType sample2, const float delayFrac)
 {
-    return sample1 * (1 - delayFrac) + sample2 * delayFrac;
+    return sample1 + delayFrac * (sample2 - sample1);
 }
 
 // Lagrange interpolation function.

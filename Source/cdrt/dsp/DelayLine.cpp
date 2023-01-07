@@ -66,7 +66,7 @@ void DelayLine <SampleType, InterpolationType>::setDelaySamples (const float new
     jassert (juce::isPositiveAndNotGreaterThan (newDelaySamples, maxBufferSize));
 
     delaySamples = newDelaySamples;
-    delayInt = static_cast<int> (std::trunc (delaySamples));
+    delayInt = static_cast<int> (std::floor (delaySamples));
     delayFrac = delaySamples - delayInt;
     
     updateInternalVariables();
@@ -95,9 +95,15 @@ int DelayLine <SampleType, InterpolationType>::getMaximumDelaySamples() const no
 }
 
 template <typename SampleType, typename InterpolationType>
-SampleType DelayLine <SampleType, InterpolationType>::getSample(const int channel, const int index) const
+SampleType DelayLine <SampleType, InterpolationType>::getSample (const int channel, const int index) const
 {
     return buffer.getSample(channel, index);
+}
+
+template <typename SampleType, typename InterpolationType>
+int DelayLine <SampleType, InterpolationType>::getReadIndex(const int channel) const
+{
+    return ((readPointer[static_cast<size_t> (channel)] - delayInt) % getMaximumDelaySamples() + getMaximumDelaySamples()) % getMaximumDelaySamples();
 }
 
 //==============================================================================
@@ -111,7 +117,7 @@ void DelayLine <SampleType, InterpolationType>::putSample (const int channel, co
     auto interpolation = interpolateSample(channel);
     auto toWriteSample = sample + interpolation * feedback;
     
-    buffer.setSample (channel, writePointer[static_cast<size_t>(channel)], toWriteSample);
+    buffer.setSample (channel, writePointer[static_cast<size_t> (channel)], toWriteSample);
     writePointer[static_cast<size_t> (channel)] = (writePointer[static_cast<size_t> (channel)] + 1) % getMaximumDelaySamples();
 }
 
@@ -124,6 +130,12 @@ SampleType DelayLine <SampleType, InterpolationType>::popSample (const int chann
     // This calulation is required because it will calculate the module of negative values.
     const auto readIndex = ((readPointer[static_cast<size_t> (channel)] - delayInt) % getMaximumDelaySamples() + getMaximumDelaySamples()) % getMaximumDelaySamples();
     auto result = buffer.getSample(channel, readIndex);
+    
+    // Baranchelss code of:
+    // if (updatePointer)
+    // {
+    //     readPointer[static_cast<size_t> (channel)] = readPointer[static_cast<size_t> (channel)] + 1) % getMaximumDelaySamples();
+    // }
     readPointer[static_cast<size_t> (channel)] = (updatePointer * ((readPointer[static_cast<size_t> (channel)] + 1) % getMaximumDelaySamples())) + (!updatePointer * readPointer[static_cast<size_t> (channel)]);
 
     return result;
