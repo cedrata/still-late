@@ -57,9 +57,4 @@ private:
     std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayLineFeedbackSmoothed;
     std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayLineDrySmoothed;
     std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> delayLineWetSmoothed;
-    
-    // Helpers variables.
-    
-    // Used to know if the playerhead in the last process block execution was running or not to know if the delya line have to be reset.
-    bool wasPlaying = true;
 };

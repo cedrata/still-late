@@ -208,9 +208,6 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     
-
-    // const auto routing = apvts.getRawParameterValue("routing")->load();
-    
     // If the input signal is mono type the single channel will be
     // copied on the second channel buffer.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
