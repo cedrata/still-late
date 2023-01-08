@@ -6,13 +6,16 @@ namespace cdrt
 namespace dsp
 {
 //==============================================================================
+// class DelayLineBase
+
+//==============================================================================
 // Public.
 
 //==============================================================================
 // Constructor.
 
-template <typename SampleType, typename  InterpolationType>
-DelayLine <SampleType, InterpolationType>::DelayLine ()
+template<typename SampleType>
+DelayLineBase<SampleType>::DelayLineBase ()
 {
     setMaxDelaySamples(0);
 }
@@ -20,8 +23,8 @@ DelayLine <SampleType, InterpolationType>::DelayLine ()
 //==============================================================================
 // Allocation/Deallocation.
 
-template <typename SampleType, typename  InterpolationType>
-void DelayLine <SampleType, InterpolationType>::prepare (const juce::dsp::ProcessSpec& spec)
+template<typename SampleType>
+void DelayLineBase<SampleType>::prepare (const juce::dsp::ProcessSpec& spec)
 {
     jassert (spec.numChannels > 0);
     numChannels = spec.numChannels;
@@ -31,19 +34,19 @@ void DelayLine <SampleType, InterpolationType>::prepare (const juce::dsp::Proces
     writePointer.resize (spec.numChannels);
     readPointer.resize (spec.numChannels);
 
-    prev.resize (spec.numChannels);
+    // prev.resize (spec.numChannels); // add inside Thiran interpolationn delay.
     sampleRate = spec.sampleRate;
 
     reset();
 }
 
-template <typename SampleType, typename InterpolationType>
-void DelayLine <SampleType, InterpolationType>::reset()
+template<typename SampleType>
+void DelayLineBase<SampleType>::reset()
 {
     for (auto vec: { &writePointer, &readPointer })
         std::fill (vec->begin(), vec->end(), 0);
 
-    std::fill (prev.begin(), prev.end(), static_cast<SampleType> (0));
+    // std::fill (prev.begin(), prev.end(), static_cast<SampleType> (0)); // add inside Thiran interpolation delay.
 
     buffer.clear();
 }
@@ -51,8 +54,8 @@ void DelayLine <SampleType, InterpolationType>::reset()
 //==============================================================================
 // Setters.
 
-template <typename SampleType, typename InterpolationType>
-void DelayLine <SampleType, InterpolationType>::setMaxDelaySamples (const int newMaxBufferSize)
+template<typename SampleType>
+void DelayLineBase<SampleType>::setMaxDelaySamples (const int newMaxBufferSize)
 {
     jassert (newMaxBufferSize >= 0);
 
@@ -60,8 +63,8 @@ void DelayLine <SampleType, InterpolationType>::setMaxDelaySamples (const int ne
     buffer.setSize (buffer.getNumChannels(), maxBufferSize, false, false, true);
 }
 
-template <typename SampleType, typename InterpolationType>
-void DelayLine <SampleType, InterpolationType>::setDelaySamples (const float newDelaySamples)
+template<typename SampleType>
+void DelayLineBase<SampleType>::setDelaySamples (const float newDelaySamples)
 {
     jassert (juce::isPositiveAndNotGreaterThan (newDelaySamples, maxBufferSize));
 
@@ -72,15 +75,15 @@ void DelayLine <SampleType, InterpolationType>::setDelaySamples (const float new
     updateInternalVariables();
 }
 
-template <typename SampleType, typename InterpolationType>
-void DelayLine <SampleType, InterpolationType>::setDelayTime (const float delayTime)
+template<typename SampleType>
+void DelayLineBase<SampleType>::setDelayTime (const float delayTime)
 {
     auto newDelaySamples = cdrt::utility::conversion::msToSamples<float>(delayTime, static_cast<float>(sampleRate));
     setDelaySamples (newDelaySamples);
 }
 
-template <typename SampleType, typename InterpolationType>
-void DelayLine <SampleType, InterpolationType>::setFeedback (const float newFeedback)
+template<typename SampleType>
+void DelayLineBase<SampleType>::setFeedback (const float newFeedback)
 {
     feedback = newFeedback;
 }
@@ -88,20 +91,20 @@ void DelayLine <SampleType, InterpolationType>::setFeedback (const float newFeed
 //==============================================================================
 // Getters.
 
-template <typename SampleType, typename InterpolationType>
-int DelayLine <SampleType, InterpolationType>::getMaximumDelaySamples() const noexcept
+template <typename SampleType>
+int DelayLineBase<SampleType>::getMaximumDelaySamples() const noexcept
 {
     return maxBufferSize;
 }
 
-template <typename SampleType, typename InterpolationType>
-SampleType DelayLine <SampleType, InterpolationType>::getSample (const int channel, const int index) const
+template <typename SampleType>
+SampleType DelayLineBase<SampleType>::getSample (const int channel, const int index) const
 {
     return buffer.getSample(channel, index);
 }
 
-template <typename SampleType, typename InterpolationType>
-int DelayLine <SampleType, InterpolationType>::getReadIndex(const int channel) const
+template <typename SampleType>
+int DelayLineBase<SampleType>::getReadIndex(const int channel) const
 {
     return ((readPointer[static_cast<size_t> (channel)] - delayInt) % getMaximumDelaySamples() + getMaximumDelaySamples()) % getMaximumDelaySamples();
 }
@@ -109,8 +112,8 @@ int DelayLine <SampleType, InterpolationType>::getReadIndex(const int channel) c
 //==============================================================================
 // Processing.
 
-template <typename SampleType, typename InterpolationType>
-void DelayLine <SampleType, InterpolationType>::putSample (const int channel, const SampleType sample)
+template <typename SampleType>
+void DelayLineBase<SampleType>::putSample (const int channel, const SampleType sample)
 {
     jassert (juce::isPositiveAndBelow (channel, numChannels));
     
@@ -121,8 +124,8 @@ void DelayLine <SampleType, InterpolationType>::putSample (const int channel, co
     writePointer[static_cast<size_t> (channel)] = (writePointer[static_cast<size_t> (channel)] + 1) % getMaximumDelaySamples();
 }
 
-template <typename SampleType, typename InterpolationType>
-SampleType DelayLine <SampleType, InterpolationType>::popSample (const int channel, const bool updatePointer)
+template <typename SampleType>
+SampleType DelayLineBase<SampleType>::popSample (const int channel, const bool updatePointer)
 {
     jassert (juce::isPositiveAndBelow (channel, numChannels));
 
@@ -141,8 +144,8 @@ SampleType DelayLine <SampleType, InterpolationType>::popSample (const int chann
     return result;
 }
 
-template <typename SampleType, typename InterpolationType>
-SampleType DelayLine <SampleType, InterpolationType>::processSample (const int channel, const float sample)
+template <typename SampleType>
+SampleType DelayLineBase<SampleType>::processSample (const int channel, const float sample)
 {
     putSample (channel, sample);
     auto result = popSample (channel);
@@ -151,14 +154,28 @@ SampleType DelayLine <SampleType, InterpolationType>::processSample (const int c
 
 //==============================================================================
 // Specialization.
-template class DelayLine<float, utility::interpolation::InterpolationTypes::None>;
-template class DelayLine<double, utility::interpolation::InterpolationTypes::None>;
-template class DelayLine<float, utility::interpolation::InterpolationTypes::Linear>;
-template class DelayLine<double, utility::interpolation::InterpolationTypes::Linear>;
-template class DelayLine<float, utility::interpolation::InterpolationTypes::Lagrange3rd>;
-template class DelayLine<double, utility::interpolation::InterpolationTypes::Lagrange3rd>;
-template class DelayLine<float, utility::interpolation::InterpolationTypes::Thiran>;
-template class DelayLine<double, utility::interpolation::InterpolationTypes::Thiran>;
+template class DelayLineBase<float>;
+template class DelayLineBase<double>;
+
+
+
+//===============================================================================
+// class DelayLineNone
+
+
+
+//===============================================================================
+// class DelayLineLinear
+
+
+
+//===============================================================================
+// class DelayLineLagrange3rd
+
+
+
+//===============================================================================
+// class DelayLineThiran
 
 } // namespace dsp
 } // namespace cdrt
