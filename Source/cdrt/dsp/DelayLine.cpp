@@ -1,4 +1,4 @@
-#include "DelayLine.h"
+#include "./DelayLine.h"
 #include "../utility/Conversion.h"
 
 namespace cdrt
@@ -15,7 +15,7 @@ namespace dsp
 // Constructor.
 
 template<typename SampleType>
-DelayLineBase<SampleType>::DelayLineBase ()
+DelayLineBase<SampleType>::DelayLineBase()
 {
     setMaxDelaySamples(0);
 }
@@ -152,30 +152,16 @@ SampleType DelayLineBase<SampleType>::processSample (const int channel, const fl
     return result;
 }
 
-//==============================================================================
-// Specialization.
-template class DelayLineBase<float>;
-template class DelayLineBase<double>;
-
-
-
 //===============================================================================
 // class DelayLineNone
+template <typename SampleType>
+SampleType DelayLineNone<SampleType>::interpolateSample (const int channel)
+{
+    // Retriving index to read from.
+    const auto index = DelayLineBase<SampleType>::getReadIndex (channel);
 
-
-
-//===============================================================================
-// class DelayLineLinear
-
-
-
-//===============================================================================
-// class DelayLineLagrange3rd
-
-
-
-//===============================================================================
-// class DelayLineThiran
-
+    // Retriving the sample from the index retrived in previous step.
+    return this->buffer.getSample(channel, index);
+}
 } // namespace dsp
 } // namespace cdrt
