@@ -152,6 +152,9 @@ SampleType DelayLineBase<SampleType>::processSample (const int channel, const fl
     return result;
 }
 
+template class DelayLineBase<float>;
+template class DelayLineBase<double>;
+
 //===============================================================================
 // class DelayLineNone
 template <typename SampleType>
@@ -163,5 +166,8 @@ SampleType DelayLineNone<SampleType>::interpolateSample (const int channel)
     // Retriving the sample from the index retrived in previous step.
     return this->buffer.getSample(channel, index);
 }
+
+template class DelayLineNone<float>;
+template class DelayLineNone<double>;
 } // namespace dsp
 } // namespace cdrt
