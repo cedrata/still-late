@@ -34,7 +34,6 @@ void DelayLineBase<SampleType>::prepare (const juce::dsp::ProcessSpec& spec)
     writePointer.resize (spec.numChannels);
     readPointer.resize (spec.numChannels);
 
-    // prev.resize (spec.numChannels); // add inside Thiran interpolationn delay.
     sampleRate = spec.sampleRate;
 
     reset();
@@ -45,8 +44,6 @@ void DelayLineBase<SampleType>::reset()
 {
     for (auto vec: { &writePointer, &readPointer })
         std::fill (vec->begin(), vec->end(), 0);
-
-    // std::fill (prev.begin(), prev.end(), static_cast<SampleType> (0)); // add inside Thiran interpolation delay.
 
     buffer.clear();
 }
@@ -155,6 +152,7 @@ SampleType DelayLineBase<SampleType>::processSample (const int channel, const fl
 template class DelayLineBase<float>;
 template class DelayLineBase<double>;
 
+
 //===============================================================================
 // class DelayLineNone
 template <typename SampleType>
@@ -169,5 +167,135 @@ SampleType DelayLineNone<SampleType>::interpolateSample (const int channel)
 
 template class DelayLineNone<float>;
 template class DelayLineNone<double>;
+
+
+//===============================================================================
+// class DelayLineLinear
+template <typename SampleType>
+SampleType DelayLineLinear<SampleType>::interpolateSample (const int channel)
+{
+    // Retriving index to read from.
+    auto index1 = this->writePointer[static_cast<size_t> (channel)];
+    auto index2 = (index1 + 1) % this->maxBufferSize;
+    
+    // Retriving samples from indexes retrived in previous step.
+    auto sample1 = this->buffer.getSample(channel, index1);
+    auto sample2 = this->buffer.getSample(channel, index2);
+    
+    return cdrt::utility::interpolation::linear<SampleType>(sample1, sample2, this->delayFrac);
+    updateInternalVariables();
+}
+
+template class DelayLineLinear<float>;
+template class DelayLineLinear<double>;
+
+
+//===============================================================================
+// class DelayLineLagrange3rd
+template <typename SampleType>
+SampleType DelayLineLagrange3rd<SampleType>::interpolateSample (const int channel)
+{
+    // Retriving index to read from.
+    auto index1 = this->writePointer[static_cast<size_t> (channel)];
+    auto index2 = (index1 + 1) % this->maxBufferSize;
+    auto index3 = (index2 + 1) % this->maxBufferSize;
+    auto index4 = (index3 + 1) % this->maxBufferSize;
+    
+    // Retriving samples from indexes retrived in previous step.
+    auto sample1 = this->buffer.getSample(channel, index1);
+    auto sample2 = this->buffer.getSample(channel, index2);
+    auto sample3 = this->buffer.getSample(channel, index3);
+    auto sample4 = this->buffer.getSample(channel, index4);
+    
+    auto res = cdrt::utility::interpolation::lagrange3rd<SampleType>(sample1, sample2, sample3, sample4, this->delayFrac);
+    
+    updateInternalVariables();
+        
+    return res;
+}
+
+template <typename SampleType>
+void DelayLineLagrange3rd<SampleType>::updateInternalVariables()
+{
+    if (this->delayInt >= 1)
+    {
+        this->delayFrac++;
+        this->delayInt--;
+    }
+}
+
+template class DelayLineLagrange3rd<float>;
+template class DelayLineLagrange3rd<double>;
+
+
+//===============================================================================
+// class DelayLineThiran
+
+// Allocation/Deallocation.
+template <typename SampleType>
+void DelayLineThiran<SampleType>::prepare (const juce::dsp::ProcessSpec &spec)
+{
+    jassert (spec.numChannels > 0);
+    this->numChannels = spec.numChannels;
+
+    this->buffer.setSize (static_cast<int> (this->numChannels), this->maxBufferSize, false, false, true);
+
+    this->writePointer.resize (spec.numChannels);
+    this->readPointer.resize (spec.numChannels);
+
+    prev.resize (spec.numChannels);
+    this->sampleRate = spec.sampleRate;
+
+    reset();
+}
+
+
+template <typename SampleType>
+void DelayLineThiran<SampleType>::reset()
+{
+    for (auto vec: { &this->writePointer, &this->readPointer })
+        std::fill (vec->begin(), vec->end(), 0);
+
+     std::fill (prev.begin(), prev.end(), static_cast<SampleType> (0));
+
+    this->buffer.clear();
+}
+
+// Processing
+template <typename SampleType>
+SampleType DelayLineThiran<SampleType>::interpolateSample (const int channel)
+{
+    // Retriving index to read from.
+    auto index1 = this->writePointer[static_cast<size_t> (channel)];
+    auto index2 = (index1 + 1) % this->maxBufferSize;
+    
+    // Retriving samples from indexes retrived in previous step.
+    auto sample1 = this->buffer.getSample(channel, index1);
+    auto sample2 = this->buffer.getSample(channel, index2);
+    
+    // Calculating result and updating prev[channel] variable.
+    auto result = cdrt::utility::interpolation::thiran<SampleType>(sample1, sample2, this->delayFrac, alpha, prev[static_cast<size_t> (channel)]);
+    
+    this->prev[static_cast<size_t>(channel)] = result;
+    
+    updateInternalVariables();
+    
+    return result;
+}
+
+template <typename SampleType>
+void DelayLineThiran<SampleType>::updateInternalVariables()
+{
+    if (this->delayFrac < (SampleType) 0.618 && this->delayInt >= 1)
+    {
+        this->delayFrac++;
+        this->delayInt--;
+    }
+
+    alpha = (1 - this->delayFrac) / (1 + this->delayFrac);
+}
+
+template class DelayLineThiran<float>;
+template class DelayLineThiran<double>;
 } // namespace dsp
 } // namespace cdrt

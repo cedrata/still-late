@@ -9,18 +9,19 @@ std::array<float, 20> inputSamples{-1.0f, -0.9f, -0.8f, -0.7f, -0.6f, -0.5f, -0.
 // None interpolation.
 TEST_CASE("Delay Line put/get sample w/ None interpolation.")
 {
-    cdrt::dsp::DelayLine<float, cdrt::utility::interpolation::InterpolationTypes::None> dl;
+    std::unique_ptr<cdrt::dsp::DelayLineBase<float>> dl;
+    dl = std::make_unique<cdrt::dsp::DelayLineNone<float>>();
     
-    dl.prepare (ps);
-    dl.setMaxDelaySamples(5);
-    dl.reset();
-    
+    dl->prepare (ps);
+    dl->setMaxDelaySamples(5);
+    dl->reset();
+
     // Being the None interpolation only the int part of delay will be considered.
-    dl.setDelaySamples (1.4f);
-    dl.setFeedback (0.5f);
-    
+    dl->setDelaySamples (1.4f);
+    dl->setFeedback (0.5f);
+
     float res;
-    
+
     // Filling the DelayLine with enough samples to do then
     // pop a sample in the first position for the second time.
     // The sample pushed the first time is -1.0,
@@ -29,12 +30,12 @@ TEST_CASE("Delay Line put/get sample w/ None interpolation.")
     // after writing again should be -1.0.
     for (size_t i = 0; i < 6; ++i)
     {
-        res = dl.processSample (0, inputSamples[i]);
+        res = dl->processSample (0, inputSamples[i]);
     }
-    
-    res = dl.getSample (0, 0);
-    float expected = inputSamples[5] + dl.getSample(0, 4) * 0.5f;
-    
+
+    res = dl->getSample (0, 0);
+    float expected = inputSamples[5] + dl->getSample(0, 4) * 0.5f;
+
     REQUIRE(res == expected);
 }
 

@@ -41,13 +41,13 @@ public:
      *
      * @param spec: context informations for processor.
      */
-    void prepare (const juce::dsp::ProcessSpec& spec);
+    virtual void prepare (const juce::dsp::ProcessSpec& spec);
 
     /**
      * @brief This method initializes the members conserving a stae of the delay like the circular buffer.
      *
      */
-    void reset();
+    virtual void reset();
     
     //==========================================================================
     // Setters.
@@ -213,7 +213,141 @@ private:
      */
     void updateInternalVariables() override {}
     
-}; // class DelayLineNone
+};
+    
 
+// Derived class from DelayLineBase implementing Linear interpolation for samples interpolation.
+template <typename SampleType>
+class DelayLineLinear : public DelayLineBase<SampleType>
+{
+public:
+    //==========================================================================
+    // Default constructor.
+    // Calling directly DelayLineBase, no constructor definition required.
+    
+    //==========================================================================
+    // Destructor.
+    
+    /**
+     *  DelayLineNone destructor
+     */
+    ~DelayLineLinear() override {}
+
+private:
+    
+    //==========================================================================
+    // Processing
+
+    /**
+     * @brief This method applies None interpolation to the samples in the selected channel.
+     *
+     * @param channel: Channel from which the sample must be interpolated.
+     * @return SampleType
+     */
+    
+    SampleType interpolateSample(const int channel) override;
+
+    /**
+     * @brief This method is used to update internal variables after the sample None interpolation process.
+     */
+    void updateInternalVariables() override {}
+    
+}; // class DelayLineLinear
+
+
+// Derived class from DelayLineBase implementing Lagrange3rd interpolation for samples interpolation.
+template <typename SampleType>
+class DelayLineLagrange3rd : public DelayLineBase<SampleType>
+{
+public:
+    //==========================================================================
+    // Default constructor.
+    // Calling directly DelayLineBase, no constructor definition required.
+    
+    //==========================================================================
+    // Destructor.
+    
+    /**
+     *  DelayLineNone destructor
+     */
+    ~DelayLineLagrange3rd() override {}
+
+private:
+    
+    //==========================================================================
+    // Processing
+
+    /**
+     * @brief This method applies None interpolation to the samples in the selected channel.
+     *
+     * @param channel: Channel from which the sample must be interpolated.
+     * @return SampleType
+     */
+    
+    SampleType interpolateSample(const int channel) override;
+
+    /**
+     * @brief This method is used to update internal variables after the sample None interpolation process.
+     */
+    void updateInternalVariables() override;
+    
+}; // class DelayLineLagrange3rd
+
+// Derived class from DelayLineBase implementing Thiran interpolation for samples interpolation.
+template <typename SampleType>
+class DelayLineThiran : public DelayLineBase<SampleType>
+{
+public:
+    //==========================================================================
+    // Default constructor.
+    // Calling directly DelayLineBase, no constructor definition required.
+    
+    //==========================================================================
+    // Destructor.
+    
+    /**
+     *  DelayLineNone destructor
+     */
+    ~DelayLineThiran() override {}
+    
+    //==========================================================================
+    // Allocation/Deallocation.
+
+    /**
+     * @brief Call this method before doing anything else to initialize the processor.
+     *
+     * @param spec: context informations for processor.
+     */
+    void prepare (const juce::dsp::ProcessSpec& spec) override;
+
+    /**
+     * @brief This method initializes the members conserving a stae of the delay like the circular buffer.
+     *
+     */
+    void reset() override;
+
+private:
+    
+    //==========================================================================
+    // Processing
+
+    /**
+     * @brief This method applies None interpolation to the samples in the selected channel.
+     *
+     * @param channel: Channel from which the sample must be interpolated.
+     * @return SampleType
+     */
+    
+    SampleType interpolateSample(const int channel) override;
+
+    /**
+     * @brief This method is used to update internal variables after the sample None interpolation process.
+     */
+    void updateInternalVariables() override;
+    
+    SampleType alpha;
+    std::vector <SampleType> prev;
+    
+}; // class Thiran
 } // namespace dsp
 } // namespace cdrt

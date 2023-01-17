@@ -111,57 +111,58 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     spec.numChannels = static_cast<juce::uint32> (2);
     
     // Delay line preparation.
-    delayLine.prepare (spec);
+    delayLine = std::make_unique<cdrt::dsp::DelayLineLagrange3rd<float>>();
+    delayLine->prepare (spec);
     
     // Temporary delay setup, must become dynaimc with parameters.
-    delayLine.setMaxDelaySamples (3 * static_cast<int> (sampleRate));
-    delayLine.setDelaySamples(2 * static_cast<int> (sampleRate));
-    delayLine.setFeedback (0.0f);
-    
+    delayLine->setMaxDelaySamples (3 * static_cast<int> (sampleRate));
+    delayLine->setDelaySamples(2 * static_cast<int> (sampleRate));
+    delayLine->setFeedback (0.0f);
+
     // Generic parameters init.
     // Reading values from apvts.
     auto inputGainParameter = apvts.getRawParameterValue("input")->load();
     auto outputGainParameter = apvts.getRawParameterValue("output")->load();
-    
+
     auto delayTimeParameter = apvts.getRawParameterValue("time")->load();
     auto delayFeedbackParameter = apvts.getRawParameterValue("feedback")->load();
-    
+
     auto delayDryParameter = apvts.getRawParameterValue("dry")->load();
     auto delayWetParameter = apvts.getRawParameterValue("wet")->load();
-    
+
     // Apply values from apvts.
-    
+
     // TODO: Convert to function..
     for (auto& value: inputSmoothed)
     {
         value.reset(sampleRate, 0.25f);
         value.setTargetValue(inputGainParameter);
     }
-    
+
     for (auto& value: outputSmoothed)
     {
         value.reset(sampleRate, 0.25f);
         value.setTargetValue(outputGainParameter);
     }
-    
+
     for (auto& value: delayLineTimeValueSmoothed)
     {
         value.reset(sampleRate, 1.0f);
         value.setTargetValue(delayTimeParameter);
     }
-    
+
     for (auto& value: delayLineFeedbackSmoothed)
     {
         value.reset(sampleRate, 0.05f);
         value.setTargetValue(delayFeedbackParameter);
     }
-    
+
     for (auto& value: delayLineDrySmoothed)
     {
         value.reset(sampleRate, 0.25f);
         value.setTargetValue(delayDryParameter);
     }
-    
+
     for (auto& value: delayLineWetSmoothed)
     {
         value.reset(sampleRate, 0.25f);
@@ -245,10 +246,10 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 + (updatedTime <= 3000.0f && updatedTime >= 0.0f) * updatedTime;
             
             // Apply the time and feedback for
-            delayLine.setDelayTime (updatedTime);
-            delayLine.setFeedback (delayLineFeedbackSmoothed[static_cast<size_t> (channel)].getNextValue());
-            
-            newSample = delayLine.processSample (channel, channelData[sample] * updatedInput);
+            delayLine->setDelayTime (updatedTime);
+            delayLine->setFeedback (delayLineFeedbackSmoothed[static_cast<size_t> (channel)].getNextValue());
+
+            newSample = delayLine->processSample (channel, channelData[sample] * updatedInput);
             channelData[sample] = ((channelData[sample] * updatedDry) + (updatedWet * newSample)) * updatedOutput;
         }
     }

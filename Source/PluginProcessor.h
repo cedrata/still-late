@@ -46,7 +46,7 @@ private:
     juce::AudioProcessorValueTreeState apvts;
     
     // Delay.
-    cdrt::dsp::DelayLine<float, cdrt::utility::interpolation::InterpolationTypes::Linear> delayLine;
+    std::unique_ptr<cdrt::dsp::DelayLineBase<float>> delayLine;
     
     // Generic parameters.
     std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> inputSmoothed;
