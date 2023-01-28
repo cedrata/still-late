@@ -47,6 +47,7 @@ private:
     
     // Delay.
     std::unique_ptr<cdrt::dsp::DelayLineBase<float>> delayLine;
+    // std::vector<std::unique_ptr<cdrt::dsp::DelayLineBase<float>>, 2> dl;
     
     // Generic parameters.
     std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> inputSmoothed;

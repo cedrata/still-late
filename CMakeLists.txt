@@ -9,7 +9,7 @@ set(PROJECT_NAME "StillLate")
 
 # Set the plugin formats you'll be building here.
 # Valid formats: AAX Unity VST AU AUv3 Standalone
-set(FORMATS AU VST3 AUv3)
+set(FORMATS AU VST3 AUv3 Standalone)
 
 # Reads in VERSION file and sticks in it CURRENT_VERSION variable
 # Be sure the file has no newlines
@@ -69,10 +69,13 @@ set(SourceFiles
 	Source/PluginProcessor.h
 	Source/cdrt/dsp/DelayLine.cpp
 	Source/cdrt/dsp/DelayLine.h
+	Source/cdrt/dsp/DelayLineRouting.cpp
+	Source/cdrt/dsp/DelayLineRouting.h
 	Source/cdrt/helper/Parameters.cpp
 	Source/cdrt/helper/Parameters.h
 	Source/cdrt/utility/Conversion.h
-	Source/cdrt/utility/Interpolation.h)
+	Source/cdrt/utility/Interpolation.h
+	Source/cdrt/utility/Routing.h)
 target_sources("${PROJECT_NAME}" PRIVATE ${SourceFiles})
 
 # No, we don't want our source buried in extra nested folders
