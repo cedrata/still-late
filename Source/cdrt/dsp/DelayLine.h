@@ -109,6 +109,12 @@ public:
      */
     int getReadIndex(const int channel) const;
     
+    /**
+     * @brief This method get the maximum number of the samples that can be processed
+     * @return juce::uint32
+     */
+    juce::uint32 getMaxBlocks() const;
+    
     //==========================================================================
     // Processing.
 

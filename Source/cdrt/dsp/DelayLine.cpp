@@ -106,6 +106,12 @@ int DelayLineBase<SampleType>::getReadIndex(const int channel) const
     return ((readPointer[static_cast<size_t> (channel)] - delayInt) % getMaximumDelaySamples() + getMaximumDelaySamples()) % getMaximumDelaySamples();
 }
 
+template <typename SampleType>
+juce::uint32 DelayLineBase<SampleType>::getMaxBlocks() const
+{
+    return maxBlocks;
+}
+
 //==============================================================================
 // Processing.
 
