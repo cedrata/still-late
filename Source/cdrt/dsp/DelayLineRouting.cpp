@@ -34,7 +34,7 @@ template class DelayLineRoutingBase<float>;
 template class DelayLineRoutingBase<double>;
 
 template <typename SampleType, typename RoutingType>
-std::vector<SampleType> DelayLineRoutingStraight<SampleType, RoutingType>::processSamples(const std::vector<SampleType> samples)
+SampleType** DelayLineRoutingStraight<SampleType, RoutingType>::processSamples(SampleType** samples)
 {
     return  cdrt::utility::routing::processDelayLineRoutingStraight<SampleType, RoutingType>(samples, this->delayLines);
 }
@@ -43,17 +43,6 @@ template class DelayLineRoutingStraight<float, utility::routing::RoutingTypes::M
 template class DelayLineRoutingStraight<float, utility::routing::RoutingTypes::StereoToStereo>;
 template class DelayLineRoutingStraight<double, utility::routing::RoutingTypes::MonoToStereo>;
 template class DelayLineRoutingStraight<double, utility::routing::RoutingTypes::StereoToStereo>;
-
-//template <typename SampleType, typename RoutingType>
-//std::vector<SampleType> DelayLineRoutingPingPong<SampleType, RoutingType>::processSamples(const std::vector<SampleType> samples)
-//{
-//    return  cdrt::utility::routing::processDelayLineRoutingPingPong<SampleType, RoutingType>(samples, this->delayLines);
-//}
-//
-//template class DelayLineRoutingPingPong<float, utility::routing::RoutingTypes::MonoToStereo>;
-//template class DelayLineRoutingPingPong<float, utility::routing::RoutingTypes::StereoToStereo>;
-//template class DelayLineRoutingPingPong<double, utility::routing::RoutingTypes::MonoToStereo>;
-//template class DelayLineRoutingPingPong<double, utility::routing::RoutingTypes::StereoToStereo>;
 } // namespace dsp
 } // namespace cdrt
 

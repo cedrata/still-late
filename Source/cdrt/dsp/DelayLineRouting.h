@@ -54,7 +54,7 @@ public:
      * @param samples: input samples to feed the DelayLine instances.
      * @return std::vector<SampleType>
      */
-    virtual std::vector<SampleType> processSamples(std::vector<SampleType> samples) = 0;
+    virtual SampleType** processSamples(SampleType** samples) = 0;
     
 protected:
     std::vector<std::weak_ptr<cdrt::dsp::DelayLineBase<SampleType>>> delayLines;
@@ -75,26 +75,8 @@ public:
     //==========================================================================
     // Processing.
     
-    std::vector<SampleType> processSamples(const std::vector<SampleType> samples) override;
+    SampleType** processSamples(SampleType** samples) override;
 }; // class DelayLineStraight
-
-template <typename SampleType, typename RoutingType>
-class DelayLineRoutingPingPong: public DelayLineRoutingBase<SampleType>
-{
-public:
-    //==========================================================================
-    // Destructor.
-    
-    /**
-     * DelayLineRoutingStraight destructor.
-     */
-    ~DelayLineRoutingPingPong () override {}
-
-    //==========================================================================
-    // Processing.
-    
-    std::vector<SampleType> processSamples(const std::vector<SampleType> samples) override;
-}; // class DelayLinePingPong
 
 } // namespace dsp
 } // namespace cdrt

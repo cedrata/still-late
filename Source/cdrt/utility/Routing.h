@@ -33,7 +33,7 @@ namespace RoutingTypes
  * @return std::vector<SampleType>
  */
 template <typename SampleType, typename RoutingType, std::enable_if_t<std::is_same_v<RoutingType, RoutingTypes::MonoToStereo> && std::is_floating_point_v<SampleType>, bool> = true>
-std::vector<SampleType> processDelayLineRoutingStraight(std::vector<SampleType> samples, std::vector<std::weak_ptr<dsp::DelayLineBase<SampleType>>> delayLines)
+SampleType** processDelayLineRoutingStraight(SampleType** samples, std::vector<std::weak_ptr<dsp::DelayLineBase<SampleType>>> delayLines)
 {
     // TODO: implementation...
     delayLines.size();
@@ -48,8 +48,8 @@ std::vector<SampleType> processDelayLineRoutingStraight(std::vector<SampleType> 
  * @param delayLines: vector containing weak pointers pointing to the DelayLine instances.
  * @return std::vector<SampleType>
  */
-template <typename SampleType, typename RoutingType, std::enable_if_t<std::is_same<RoutingType, RoutingTypes::StereoToStereo>::value && std::is_floating_point<SampleType>::value, bool> = true>
-std::vector<SampleType> processDelayLineRoutingStraight(std::vector<SampleType> samples, std::vector<std::weak_ptr<dsp::DelayLineBase<SampleType>>> delayLines)
+template <typename SampleType, typename RoutingType, std::enable_if_t<std::is_same_v<RoutingType, RoutingTypes::StereoToStereo> && std::is_floating_point_v<SampleType>, bool> = true>
+SampleType** processDelayLineRoutingStraight(SampleType** samples, std::vector<std::weak_ptr<dsp::DelayLineBase<SampleType>>> delayLines)
 {
     // TODO: implementation...
     delayLines.size();
