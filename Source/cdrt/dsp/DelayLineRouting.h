@@ -17,7 +17,7 @@ public:
     /**
      * @brief Construct a new DelayLineRouting object.
      */
-    DelayLineRoutingBase ();
+    DelayLineRoutingBase() {}
     
     
     //==========================================================================
