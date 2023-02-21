@@ -110,14 +110,27 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     spec.maximumBlockSize = static_cast<juce::uint32> (samplesPerBlock);
     spec.numChannels = static_cast<juce::uint32> (2);
     
-    // Delay line preparation.
-    delayLine = std::make_unique<cdrt::dsp::DelayLineLagrange3rd<float>>();
-    delayLine->prepare (spec);
+    // Delay lines preparation.
+//    for (size_t i = 0; i < numDelayLines; ++i)
+//    {
+//        delayLines.push_back(std::make_shared<cdrt::dsp::DelayLineLagrange3rd<float>>());
+//        delayLines[i]->prepare(spec);
+//        delayLines[i]->setMaxDelaySamples(maxDelayTimeInSeconds * static_cast<int> (sampleRate));
+//        delayLines[i]->setDelaySamples(initialDelaySamples);
+//        delayLines[i]->setFeedback(initialFeedback);
+//    }
     
-    // Temporary delay setup, must become dynaimc with parameters.
-    delayLine->setMaxDelaySamples (3 * static_cast<int> (sampleRate));
-    delayLine->setDelaySamples(2 * static_cast<int> (sampleRate));
-    delayLine->setFeedback (0.0f);
+//    if (getTotalNumInputChannels() == 1)
+//    {
+//        delayLineRouter = std::make_unique<cdrt::dsp::DelayLineRoutingStraight<float, cdrt::utility::routing::RoutingTypes::MonoToStereo>>();
+//    }
+//    else if (getTotalNumInputChannels() == 2)
+//    {
+//        delayLineRouter = std::make_unique<cdrt::dsp::DelayLineRoutingStraight<float, cdrt::utility::routing::RoutingTypes::StereoToStereo>>();
+//    }
+//    delayLineRouter = std::make_unique<cdrt::dsp::DelayLineRoutingStraightMonoToStereo<float>>();
+//
+//      delayLineRouter->prepare(delayLines);
 
     // Generic parameters init.
     // Reading values from apvts.
@@ -206,53 +219,54 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ignoreUnused (midiMessages);
 
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+//    auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-    
-    // If the input signal is mono type the single channel will be
-    // copied on the second channel buffer.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-         // buffer.clear (i, 0, buffer.getNumSamples());
-         buffer.copyFrom(i, 0, buffer, 0, 0, buffer.getNumSamples());
 
     // Plugin processing.
-    float newSample;
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        // Get data for the current channel.
-        auto* channelData = buffer.getWritePointer (channel);
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-        {
-            // Read the parameter to increment for the current channel.
-            const auto updatedInput = inputSmoothed[static_cast<size_t>(channel)].getNextValue();
-            const auto updatedOutput = outputSmoothed[static_cast<size_t>(channel)].getNextValue();
-            const auto updatedWet = delayLineWetSmoothed[static_cast<size_t>(channel)].getNextValue();
-            const auto updatedDry = delayLineDrySmoothed[static_cast<size_t>(channel)].getNextValue();
-            
-            // Delay time is critical, smoothing can get it wrong sometimes and goes above the given target values.
-            auto updatedTime = delayLineTimeValueSmoothed[static_cast<size_t>(channel)].getNextValue();
-            
-            // Branchelss code for:
-            // if (updatedTime < 0.0f)
-            // {
-            //     updatedTime = 0.0f;
-            // }
-            // else if (updatedTime > 3000.0f)
-            // {
-            //     updatedTime = 3000.0f;
-            // }
-            updatedTime = (updatedTime < 0.0f) * 0
-                + (updatedTime > 3000.0f) * 3000.0f
-                + (updatedTime <= 3000.0f && updatedTime >= 0.0f) * updatedTime;
-            
-            // Apply the time and feedback for
-            delayLine->setDelayTime (updatedTime);
-            delayLine->setFeedback (delayLineFeedbackSmoothed[static_cast<size_t> (channel)].getNextValue());
+//    float newSample;
 
-            newSample = delayLine->processSample (channel, channelData[sample] * updatedInput);
-            channelData[sample] = ((channelData[sample] * updatedDry) + (updatedWet * newSample)) * updatedOutput;
-        }
-    }
+//    float *toProcessSamples = new float[2];
+//    float **channelDatas = new float*[2];
+//
+//    float updatedInput[2];
+//    float updatedOutput[2];
+//    float updatedWet[2];
+//    float updatedDry[2];
+//
+//    channelDatas[0] = buffer.getWritePointer(0);
+//    channelDatas[1] = buffer.getWritePointer(1);
+//    for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+//    {
+//        for (int channel = 0; channel < totalNumOutputChannels; ++channel)
+//        {
+////            // Read the parameter to increment for the current channel.
+//            updatedInput[channel] = inputSmoothed[static_cast<size_t>(channel)].getNextValue();
+//            updatedOutput[channel] = outputSmoothed[static_cast<size_t>(channel)].getNextValue();
+//            updatedWet[channel] = delayLineWetSmoothed[static_cast<size_t>(channel)].getNextValue();
+//            updatedDry[channel] = delayLineDrySmoothed[static_cast<size_t>(channel)].getNextValue();
+//
+//            // Delay time is critical, smoothing can get it wrong sometimes and goes above the given target values.
+//            auto updatedTime = delayLineTimeValueSmoothed[static_cast<size_t>(channel)].getNextValue();
+//
+//            // Apply the time and feedback.
+//            delayLines[channel]->setDelayTime (updatedTime);
+//            delayLines[channel]->setFeedback (delayLineFeedbackSmoothed[static_cast<size_t> (channel)].getNextValue());
+//
+//            toProcessSamples[channel] = channelDatas[channel][sample];
+//        }
+//        toProcessSamples[0] = channelDatas[0][sample] * updatedInput[0];
+//        toProcessSamples[1] = channelDatas[1][sample] * updatedInput[1];
+//
+//        toProcessSamples = delayLineRouter->processSamples(toProcessSamples);
+//
+//        for (int channel = 0; channel < totalNumOutputChannels; ++channel)
+//            channelDatas[channel][sample] = ((channelDatas[channel][sample] * updatedDry[channel]) + (updatedWet[channel] * toProcessSamples[channel])) * updatedOutput[channel];
+//    }
+//
+//
+//
+//    delete [] channelDatas;
+//    delete [] toProcessSamples ;
 }
 
 //==============================================================================

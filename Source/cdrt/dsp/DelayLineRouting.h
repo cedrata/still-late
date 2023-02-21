@@ -1,7 +1,6 @@
 #pragma once
 
 #include "./DelayLine.h"
-#include "../utility/Routing.h"
 namespace cdrt
 {
 namespace dsp
@@ -54,14 +53,14 @@ public:
      * @param samples: input samples to feed the DelayLine instances.
      * @return std::vector<SampleType>
      */
-    virtual SampleType** processSamples(SampleType** samples) = 0;
+    virtual SampleType* processSamples(SampleType* samples) = 0;
     
 protected:
     std::vector<std::weak_ptr<cdrt::dsp::DelayLineBase<SampleType>>> delayLines;
 }; // class DelayLineRoutingBase
 
-template <typename SampleType, typename RoutingType>
-class DelayLineRoutingStraight: public DelayLineRoutingBase<SampleType>
+template <typename SampleType>
+class DelayLineRoutingStraightMonoToStereo: public DelayLineRoutingBase<SampleType>
 {
 public:
     //==========================================================================
@@ -70,12 +69,12 @@ public:
     /**
      * DelayLineRoutingStraight destructor.
      */
-    ~DelayLineRoutingStraight () override {}
+    ~DelayLineRoutingStraightMonoToStereo () override {}
 
     //==========================================================================
     // Processing.
     
-    SampleType** processSamples(SampleType** samples) override;
+    SampleType* processSamples(SampleType* samples) override;
 }; // class DelayLineStraight
 
 } // namespace dsp

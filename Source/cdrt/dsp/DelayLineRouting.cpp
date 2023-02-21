@@ -27,22 +27,29 @@ void DelayLineRoutingBase<SampleType>::reset() noexcept
     // to be stored as vector of weak pointers here, this means we do not care
     // about old pointers. They the old shared pointers must be handled
     // outside this class.
-    delayLines.erase(delayLines.begin());
+//    delayLines.erase(delayLines.begin(), delayLines.end());
 }
 
 template class DelayLineRoutingBase<float>;
 template class DelayLineRoutingBase<double>;
 
-template <typename SampleType, typename RoutingType>
-SampleType** DelayLineRoutingStraight<SampleType, RoutingType>::processSamples(SampleType** samples)
+template <typename SampleType>
+SampleType* DelayLineRoutingStraightMonoToStereo<SampleType>::processSamples(SampleType* samples)
 {
-    return  cdrt::utility::routing::processDelayLineRoutingStraight<SampleType, RoutingType>(samples, this->delayLines);
+    {
+        auto channel0 = this->delayLines[0].lock();
+        auto channel1 = this->delayLines[1].lock();
+        auto temp = samples[0];
+        
+        samples[0] = channel0->processSample(0, temp);
+        samples[1] = channel1->processSample(0, temp);
+    }
+    
+    return samples;
 }
 
-template class DelayLineRoutingStraight<float, utility::routing::RoutingTypes::MonoToStereo>;
-template class DelayLineRoutingStraight<float, utility::routing::RoutingTypes::StereoToStereo>;
-template class DelayLineRoutingStraight<double, utility::routing::RoutingTypes::MonoToStereo>;
-template class DelayLineRoutingStraight<double, utility::routing::RoutingTypes::StereoToStereo>;
+template class DelayLineRoutingStraightMonoToStereo<float>;
+template class DelayLineRoutingStraightMonoToStereo<double>;
 } // namespace dsp
 } // namespace cdrt
 

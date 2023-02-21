@@ -2,6 +2,7 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "cdrt/dsp/DelayLine.h"
+#include "cdrt/dsp/DelayLineRouting.h"
 #include "cdrt/utility/Interpolation.h"
 
 
@@ -46,8 +47,15 @@ private:
     juce::AudioProcessorValueTreeState apvts;
     
     // Delay.
-    std::unique_ptr<cdrt::dsp::DelayLineBase<float>> delayLine;
-    // std::vector<std::unique_ptr<cdrt::dsp::DelayLineBase<float>>, 2> dl;
+//    std::unique_ptr<cdrt::dsp::DelayLineBase<float>> delayLine;
+    static constexpr int numDelayLines = 2;
+    static constexpr int maxDelayTimeInSeconds = 3;
+    static constexpr float maxDelayTimeInMilliseconds = 3000.0f;
+    static constexpr float initialDelaySamples = 250.0f;
+    static constexpr float initialFeedback = 0.0f;
+    std::vector<std::shared_ptr<cdrt::dsp::DelayLineBase<float>>> delayLines;
+    std::unique_ptr<cdrt::dsp::DelayLineRoutingBase<float>> delayLineRouter;
+    
     
     // Generic parameters.
     std::array<juce::SmoothedValue<float, juce::ValueSmoothingTypes::Linear>, 2> inputSmoothed;
