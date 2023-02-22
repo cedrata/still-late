@@ -54,7 +54,7 @@ private:
     static constexpr float initialDelaySamples = 250.0f;
     static constexpr float initialFeedback = 0.0f;
     std::vector<std::shared_ptr<cdrt::dsp::DelayLineBase<float>>> delayLines;
-//    std::unique_ptr<cdrt::dsp::DelayLineRoutingBase<float>> delayLineRouter;
+    std::unique_ptr<cdrt::dsp::DelayLineRoutingBase<float>> delayLineRouter;
     
     
     // Generic parameters.

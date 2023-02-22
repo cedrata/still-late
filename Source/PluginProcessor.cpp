@@ -128,9 +128,8 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 //    {
 //        delayLineRouter = std::make_unique<cdrt::dsp::DelayLineRoutingStraight<float, cdrt::utility::routing::RoutingTypes::StereoToStereo>>();
 //    }
-//    delayLineRouter = std::make_unique<cdrt::dsp::DelayLineRoutingStraightMonoToStereo<float>>();
-//
-//      delayLineRouter->prepare(delayLines);
+    delayLineRouter = std::make_unique<cdrt::dsp::DelayLineRoutingStraightMonoToStereo<float>>();
+    delayLineRouter->prepare(delayLines);
 
     // Generic parameters init.
     // Reading values from apvts.
@@ -222,16 +221,16 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-//    float *toProcessSamples = new float[2];
-//    float **channelDatas = new float*[2];
+    float *toProcessSamples = new float[2];
+    float **channelDatas = new float*[2];
 
     float updatedInput[2];
     float updatedOutput[2];
     float updatedWet[2];
     float updatedDry[2];
 
-//    channelDatas[0] = buffer.getWritePointer(0);
-//    channelDatas[1] = buffer.getWritePointer(1);
+    channelDatas[0] = buffer.getWritePointer(0);
+    channelDatas[1] = buffer.getWritePointer(1);
     for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
     {
         for (int channel = 0; channel < totalNumOutputChannels; ++channel)
@@ -249,18 +248,18 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             delayLines[static_cast<size_t>(channel)]->setDelayTime (updatedTime);
             delayLines[static_cast<size_t>(channel)]->setFeedback (delayLineFeedbackSmoothed[static_cast<size_t> (channel)].getNextValue());
 
-//            toProcessSamples[channel] = channelDatas[channel][sample];
+            toProcessSamples[channel] = channelDatas[channel][sample];
         }
-//        toProcessSamples[0] = channelDatas[0][sample] * updatedInput[0];
-//        toProcessSamples[1] = channelDatas[1][sample] * updatedInput[1];
+        toProcessSamples[0] = channelDatas[0][sample] * updatedInput[0];
+        toProcessSamples[1] = channelDatas[1][sample] * updatedInput[1];
 
-//        toProcessSamples = delayLineRouter->processSamples(toProcessSamples);
+        toProcessSamples = delayLineRouter->processSamples(toProcessSamples);
 
-//        for (int channel = 0; channel < totalNumOutputChannels; ++channel)
-//            channelDatas[channel][sample] = ((channelDatas[channel][sample] * updatedDry[channel]) + (updatedWet[channel] * toProcessSamples[channel])) * updatedOutput[channel];
+        for (int channel = 0; channel < totalNumOutputChannels; ++channel)
+            channelDatas[channel][sample] = ((channelDatas[channel][sample] * updatedDry[channel]) + (updatedWet[channel] * toProcessSamples[channel])) * updatedOutput[channel];
     }
-//    delete [] channelDatas;
-//    delete [] toProcessSamples ;
+    delete [] channelDatas;
+    delete [] toProcessSamples ;
 }
 
 //==============================================================================
