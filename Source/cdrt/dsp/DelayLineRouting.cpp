@@ -27,7 +27,7 @@ void DelayLineRoutingBase<SampleType>::reset() noexcept
     // to be stored as vector of weak pointers here, this means we do not care
     // about old pointers. They the old shared pointers must be handled
     // outside this class.
-//    delayLines.erase(delayLines.begin(), delayLines.end());
+    delayLines.erase(delayLines.begin(), delayLines.end());
 }
 
 template class DelayLineRoutingBase<float>;

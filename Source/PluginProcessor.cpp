@@ -218,8 +218,12 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ignoreUnused (midiMessages);
 
     juce::ScopedNoDenormals noDenormals;
-    // auto totalNumInputChannels  = getTotalNumInputChannels();
+     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
+    
+    // copy left input to right input if input signal is mono.
+    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+        buffer.copyFrom(i, 0, buffer, 0, 0, buffer.getNumSamples());
 
     float *toProcessSamples = new float[2];
     float **channelDatas = new float*[2];
