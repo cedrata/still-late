@@ -181,7 +181,7 @@ template <typename SampleType>
 SampleType DelayLineLinear<SampleType>::interpolateSample (const int channel)
 {
     // Retriving index to read from.
-    auto index1 = this->writePointer[static_cast<size_t> (channel)];
+    auto index1 = DelayLineBase<SampleType>::getReadIndex(channel);
     auto index2 = (index1 + 1) % this->maxBufferSize;
     
     // Retriving samples from indexes retrived in previous step.
@@ -202,7 +202,7 @@ template <typename SampleType>
 SampleType DelayLineLagrange3rd<SampleType>::interpolateSample (const int channel)
 {
     // Retriving index to read from.
-    auto index1 = this->writePointer[static_cast<size_t> (channel)];
+    auto index1 = DelayLineBase<SampleType>::getReadIndex(channel);
     auto index2 = (index1 + 1) % this->maxBufferSize;
     auto index3 = (index2 + 1) % this->maxBufferSize;
     auto index4 = (index3 + 1) % this->maxBufferSize;
@@ -272,7 +272,7 @@ template <typename SampleType>
 SampleType DelayLineThiran<SampleType>::interpolateSample (const int channel)
 {
     // Retriving index to read from.
-    auto index1 = this->writePointer[static_cast<size_t> (channel)];
+    auto index1 = DelayLineBase<SampleType>::getReadIndex(channel);
     auto index2 = (index1 + 1) % this->maxBufferSize;
     
     // Retriving samples from indexes retrived in previous step.
