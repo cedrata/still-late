@@ -17,7 +17,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createLayout(void)
     parameters.push_back (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID {"feedback", 4}, "Feedback", juce::NormalisableRange<float> {0.0f, 1.0f, 0.01f}, 0.5f));
     parameters.push_back (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID {"dry", 5}, "Dry", juce::NormalisableRange<float> {0.0f, 1.0f, 0.01f}, 0.7f));
     parameters.push_back (std::make_unique<juce::AudioParameterFloat> (juce::ParameterID {"wet", 6}, "Wet", juce::NormalisableRange<float> {0.0f, 1.0f, 0.01f}, 0.7f));
-    parameters.push_back (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID {"routing", 7}, "Routing", juce::StringArray {"Straight", "Ping Pong L to R", "Ping Pong R to L"}, 0));
+    // parameters.push_back (std::make_unique<juce::AudioParameterChoice> (juce::ParameterID {"routing", 7}, "Routing", juce::StringArray {"Straight", "Ping Pong L to R", "Ping Pong R to L"}, 0));
 
     return { parameters.begin(), parameters.end() };
 }

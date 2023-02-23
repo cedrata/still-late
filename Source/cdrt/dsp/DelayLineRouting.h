@@ -60,7 +60,7 @@ protected:
 }; // class DelayLineRoutingBase
 
 template <typename SampleType>
-class DelayLineRoutingStraightMonoToStereo: public DelayLineRoutingBase<SampleType>
+class DelayLineRoutingStraight: public DelayLineRoutingBase<SampleType>
 {
 public:
     //==========================================================================
@@ -69,7 +69,7 @@ public:
     /**
      * DelayLineRoutingStraight destructor.
      */
-    ~DelayLineRoutingStraightMonoToStereo () override {}
+    ~DelayLineRoutingStraight() override {}
 
     //==========================================================================
     // Processing.

@@ -113,22 +113,14 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     // Delay lines preparation.
     for (size_t i = 0; i < numDelayLines; ++i)
     {
-        delayLines.push_back(std::make_shared<cdrt::dsp::DelayLineLagrange3rd<float>>());
+        delayLines.push_back(std::make_shared<cdrt::dsp::DelayLineLinear<float>>());
         delayLines[i]->prepare(spec);
         delayLines[i]->setMaxDelaySamples(maxDelayTimeInSeconds * static_cast<int> (sampleRate));
         delayLines[i]->setDelaySamples(initialDelaySamples);
         delayLines[i]->setFeedback(initialFeedback);
     }
     
-//    if (getTotalNumInputChannels() == 1)
-//    {
-//        delayLineRouter = std::make_unique<cdrt::dsp::DelayLineRoutingStraight<float, cdrt::utility::routing::RoutingTypes::MonoToStereo>>();
-//    }
-//    else if (getTotalNumInputChannels() == 2)
-//    {
-//        delayLineRouter = std::make_unique<cdrt::dsp::DelayLineRoutingStraight<float, cdrt::utility::routing::RoutingTypes::StereoToStereo>>();
-//    }
-    delayLineRouter = std::make_unique<cdrt::dsp::DelayLineRoutingStraightMonoToStereo<float>>();
+    delayLineRouter = std::make_unique<cdrt::dsp::DelayLineRoutingStraight<float>>();
     delayLineRouter->prepare(delayLines);
 
     // Generic parameters init.
@@ -143,8 +135,6 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     auto delayWetParameter = apvts.getRawParameterValue("wet")->load();
 
     // Apply values from apvts.
-
-    // TODO: Convert to function..
     for (auto& value: inputSmoothed)
     {
         value.reset(sampleRate, 0.25f);
@@ -218,7 +208,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ignoreUnused (midiMessages);
 
     juce::ScopedNoDenormals noDenormals;
-     auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     
     // copy left input to right input if input signal is mono.

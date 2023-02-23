@@ -47,7 +47,6 @@ private:
     juce::AudioProcessorValueTreeState apvts;
     
     // Delay.
-//    std::unique_ptr<cdrt::dsp::DelayLineBase<float>> delayLine;
     static constexpr int numDelayLines = 2;
     static constexpr int maxDelayTimeInSeconds = 3;
     static constexpr float maxDelayTimeInMilliseconds = 3000.0f;

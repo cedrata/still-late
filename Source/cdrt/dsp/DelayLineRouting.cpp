@@ -34,7 +34,7 @@ template class DelayLineRoutingBase<float>;
 template class DelayLineRoutingBase<double>;
 
 template <typename SampleType>
-SampleType* DelayLineRoutingStraightMonoToStereo<SampleType>::processSamples(SampleType* samples)
+SampleType* DelayLineRoutingStraight<SampleType>::processSamples(SampleType* samples)
 {
     {
         auto channel0 = this->delayLines[0].lock();
@@ -48,8 +48,8 @@ SampleType* DelayLineRoutingStraightMonoToStereo<SampleType>::processSamples(Sam
     return samples;
 }
 
-template class DelayLineRoutingStraightMonoToStereo<float>;
-template class DelayLineRoutingStraightMonoToStereo<double>;
+template class DelayLineRoutingStraight<float>;
+template class DelayLineRoutingStraight<double>;
 } // namespace dsp
 } // namespace cdrt
 
