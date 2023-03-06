@@ -9,7 +9,7 @@ set(PROJECT_NAME "StillLate")
 
 # Set the plugin formats you'll be building here.
 # Valid formats: AAX Unity VST AU AUv3 Standalone
-set(FORMATS AU VST3 AUv3 Standalone)
+set(FORMATS AU VST3 AUv3)
 
 # Reads in VERSION file and sticks in it CURRENT_VERSION variable
 # Be sure the file has no newlines
@@ -21,9 +21,13 @@ project(${PROJECT_NAME} VERSION ${CURRENT_VERSION})
 # By default we don't want Xcode schemes to be made for modules, etc
 set(CMAKE_XCODE_GENERATE_SCHEME OFF)
 
-# Enable to build universal binaries on macOS, increasing build time
-# This only affects local builds, GitHub actions always builds Universals
-# set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
+# Building universal binaries on macOS increases build time
+# This is set on CI but not during local dev
+if ((DEFINED ENV{CI}) AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
+  message("Building for Apple Silicon and x86_64")
+  set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
+endif ()
+
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Support macOS down to High Sierra")
 
 # Adds all the module sources so they appear correctly in the IDE
@@ -91,7 +95,7 @@ juce_add_binary_data(Assets SOURCES pamplejuce.png)
 # See https://forum.juce.com/t/loading-pytorch-model-using-binarydata/39997/2
 set_target_properties(Assets PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
-# This cleans up the folder organization on Xcode.
+# Clean up folder organization on Xcode.
 # It tucks the Plugin varieties into a "Targets" folder and generate an Xcode Scheme manually
 # Xcode scheme generation is turned off globally to limit noise from other targets
 # The non-hacky way of doing this is via the global PREDEFINED_TARGETS_FOLDER property
@@ -135,13 +139,25 @@ target_link_libraries("${PROJECT_NAME}"
     juce::juce_recommended_lto_flags
     juce::juce_recommended_warning_flags)
 
+# When present, use Intel IPP for performance on Windows
+if(MSVC)
+    find_package(IPP)
+    if(IPP_FOUND)
+        target_link_libraries("${PROJECT_NAME}" PUBLIC IPP::ipps IPP::ippcore IPP::ippi IPP::ippcv)
+        message("IPP LIBRARIES FOUND")
+        target_compile_definitions("${PROJECT_NAME}" PUBLIC PAMPLEJUCE_IPP=1)
+    else()
+        message("IPP LIBRARIES *NOT* FOUND")
+    endif()
+endif()
+
 # Required for ctest (which is just easier for cross-platform CI)
 # include(CTest) does this too, but adds tons of targets we don't want
 # See: https://github.com/catchorg/Catch2/issues/2026
-# You could forgo ctest and call ./Tests directly from the build dir
+# You also could forgo ctest and call ./Tests directly from the build dir
 enable_testing()
 
-# "GLOBS ARE BAD" is brittle and silly UX, sorry CMake!
+# "GLOBS ARE BAD" is brittle and silly dev UX, sorry CMake!
 # CONFIGURE_DEPENDS / Clion's CMake integration makes globbing absolutely fine
 file(GLOB_RECURSE TestFiles CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.h")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/Tests PREFIX "" FILES ${TestFiles})
@@ -153,7 +169,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
     GIT_PROGRESS TRUE
     GIT_SHALLOW TRUE
-    GIT_TAG v3.1.0)
+    GIT_TAG v3.3.2)
 FetchContent_MakeAvailable(Catch2) # find_package equivalent
 
 # Setup the test executable, again C++ 20 please

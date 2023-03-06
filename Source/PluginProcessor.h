@@ -39,11 +39,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     
     // AudioProcessorValueTreeSTate::Listener
-    void parameterChanged (const juce::String& parameterID, float newValue) override;
     
-private:
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
-    // Audio parameters.
     juce::AudioProcessorValueTreeState apvts;
     
     // Delay.
